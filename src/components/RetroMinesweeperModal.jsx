@@ -186,7 +186,7 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
     return newBoard;
   };
 
-  // Autopilot Bot Loop (60ms interval)
+  // Balanced Pacing Autopilot Bot Loop (140ms interval for clear step-by-step visualization)
   useEffect(() => {
     if (!isOpen || !isPlaying || isGameOver || isWon || !isAutopilot) return;
 
@@ -207,7 +207,7 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
         }
 
         let newBoard = prevBoard.map(row => row.map(cell => ({ ...cell })));
-        let anyActionInThisPass = false;
+        let actionTaken = false;
 
         const getNeighbors = (r, c, b) => {
           const neighbors = [];
@@ -224,49 +224,40 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
           return neighbors;
         };
 
-        // Batch deductions in a single tick until no more instant moves exist
-        let changedInLoop = true;
-        let loopLimit = 0;
+        // Deterministic deduction step
+        for (let r = 0; r < BOARD_SIZE; r++) {
+          for (let c = 0; c < BOARD_SIZE; c++) {
+            const cell = newBoard[r][c];
+            if (!cell.isRevealed || cell.neighborMines === 0) continue;
 
-        while (changedInLoop && loopLimit < 10) {
-          changedInLoop = false;
-          loopLimit++;
+            const neighbors = getNeighbors(r, c, newBoard);
+            const hidden = neighbors.filter(n => !n.isRevealed && !n.isFlagged);
+            const flagged = neighbors.filter(n => n.isFlagged);
 
-          for (let r = 0; r < BOARD_SIZE; r++) {
-            for (let c = 0; c < BOARD_SIZE; c++) {
-              const cell = newBoard[r][c];
-              if (!cell.isRevealed || cell.neighborMines === 0) continue;
+            // Rule A: All remaining hidden neighbors are mines -> Flag them
+            if (hidden.length > 0 && hidden.length + flagged.length === cell.neighborMines) {
+              hidden.forEach(n => {
+                newBoard[n.r][n.c].isFlagged = true;
+                setFlagsLeft(f => Math.max(0, f - 1));
+                playSound(800, 'triangle', 0.06);
+              });
+              actionTaken = true;
+              break;
+            }
 
-              const neighbors = getNeighbors(r, c, newBoard);
-              const hidden = neighbors.filter(n => !n.isRevealed && !n.isFlagged);
-              const flagged = neighbors.filter(n => n.isFlagged);
-
-              // Rule A: All remaining hidden neighbors are mines -> Flag ALL of them
-              if (hidden.length > 0 && hidden.length + flagged.length === cell.neighborMines) {
-                hidden.forEach(n => {
-                  newBoard[n.r][n.c].isFlagged = true;
-                  setFlagsLeft(f => Math.max(0, f - 1));
-                });
-                changedInLoop = true;
-                anyActionInThisPass = true;
-              }
-
-              // Rule B: All mines are flagged, remaining hidden neighbors are safe -> Reveal ALL of them
-              if (flagged.length === cell.neighborMines && hidden.length > 0) {
-                hidden.forEach(n => {
-                  newBoard = revealCell(n.r, n.c, newBoard);
-                });
-                changedInLoop = true;
-                anyActionInThisPass = true;
-              }
+            // Rule B: All mines are flagged, remaining hidden neighbors are safe -> Reveal
+            if (flagged.length === cell.neighborMines && hidden.length > 0) {
+              hidden.forEach(n => {
+                newBoard = revealCell(n.r, n.c, newBoard);
+              });
+              actionTaken = true;
+              break;
             }
           }
+          if (actionTaken) break;
         }
 
-        if (anyActionInThisPass) {
-          playSound(750, 'square', 0.04);
-          return newBoard;
-        }
+        if (actionTaken) return newBoard;
 
         // 3. Fallback move if no 100% deterministic move found:
         // Prioritize picking an unrevealed corner tile
@@ -293,7 +284,7 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
 
         return newBoard;
       });
-    }, 60);
+    }, 140);
 
     return () => clearInterval(botInterval);
   }, [isOpen, isPlaying, isGameOver, isWon, isAutopilot]);
