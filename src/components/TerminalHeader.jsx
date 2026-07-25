@@ -40,7 +40,7 @@ export default function TerminalHeader({ isMuted, setIsMuted, onOpenDiag }) {
           title="Clique para abrir o Painel de Diagnóstico do Sistema"
         >
           <Radio size={15} className="crt-flicker" />
-          <span>SYS_LOG // AMBER_OS_v2.6</span>
+          <span>SYS_LOG // OS_v2.6</span>
           <span 
             style={{ 
               fontSize: '0.7rem', 

@@ -5,7 +5,7 @@ export default function LoadingScreen({ onComplete }) {
   const [progress, setProgress] = useState(0);
 
   const bootMessages = [
-    { time: '0.00s', text: 'INITIALIZING AMBER_OS v2.6...' },
+    { time: '0.00s', text: 'INITIALIZING OS v2.6...' },
     { time: '0.80s', text: 'LOADING /usr/russi/profile...' },
     { time: '1.60s', text: 'MOUNTING MEMORY BANKS & CRT SCANLINES...' },
     { time: '2.50s', text: 'SYNCHRONIZING EMOTION ENGINE FREQUENCIES...' },
@@ -81,7 +81,7 @@ export default function LoadingScreen({ onComplete }) {
         }}
       >
         <div style={{ fontSize: '0.8rem', color: 'var(--amber-dim)', marginBottom: '16px', fontWeight: '700' }}>
-          ((o)) AMBER_OS BOOT LOADER v2.6 // PROFILE TRANSMISSION
+          ((o)) OS BOOT LOADER v2.6 // PROFILE TRANSMISSION
         </div>
 
         {/* Boot Logs Output */}

@@ -144,7 +144,7 @@ export default function SystemDiagnosticPanel({ isOpen, onClose }) {
           </button>
 
           <div style={{ fontSize: '0.75rem', color: 'var(--amber-dim)' }}>
-            STATUS DO SISTEMA: OPERACIONAL (AMBER_OS v2.6)
+            STATUS DO SISTEMA: OPERACIONAL (OS v2.6)
           </div>
         </div>
       </div>

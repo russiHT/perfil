@@ -78,11 +78,11 @@ export default function InteractiveCli({ onOpenDiag }) {
 - projects : Projetos recentes em destaque
 - diag     : Painel de diagnóstico do hardware CRT
 - reset    : Restaura as bolinhas para a esfera inicial
-- matrix   : Iniciar chuva de código Matrix em tempo real
-- quote    : Citação filosófica famosa
+- matrix   : Iniciar Matrix
+- quote    : Citação filosófica
 - uptime   : Status do sistema e tempo de atividade
-- theme    : Alternar tema de cores completo (Âmbar / Cyan / Emerald)
-- secret   : Arquivos confidenciais do cyberdeck
+- theme    : Alternar tema de cores completo (OS Standard / Cyan / Emerald)
+- secret   : Arquivos confidenciais
 - github   : Abrir repositório GitHub (russiHT)
 - contact  : Formas de contato
 - clear    : Limpar tela`
@@ -96,25 +96,25 @@ export default function InteractiveCli({ onOpenDiag }) {
         break;
 
       case 'skills':
-        newHistory.push({ 
-          type: 'sys', 
+        newHistory.push({
+          type: 'sys',
           text: `[HABILIDADES & TECNOLOGIAS]:
 • Frontend   : React.js, JavaScript (ES6+), HTML5, CSS3
 • Backend    : Java (Spring), Python
 • Animações  : Anime.js v4, WebGL Canvas 3D, CSS Animations
-• Ferramentas: Vite, Git, GitHub, Node.js, Maven` 
+• Ferramentas: Vite, Git, GitHub, Node.js, Maven`
         });
         break;
 
       case 'projects':
-        newHistory.push({ 
-          type: 'sys', 
+        newHistory.push({
+          type: 'sys',
           text: `[PROJETOS DESTAQUE]:
 1. perfil          — CRT Terminal Portfolio (JS/React) · github.com/russiHT/perfil
 2. streetwear-shop — Streetwear Shop Experience (JS)   · github.com/russiHT/streetwear-shop
 3. radar-animal    — Radar Animal (JavaScript)         · github.com/russiHT/radar-animal
 4. insinori        — Projeto Java                     · github.com/russiHT/insinori
-5. relatorio-pdf   — Gerador de Relatório PDF (Python) · github.com/russiHT/Gerador-relatorio-pdf` 
+5. relatorio-pdf   — Gerador de Relatório PDF (Python) · github.com/russiHT/Gerador-relatorio-pdf`
         });
         break;
 
@@ -167,7 +167,7 @@ drwx------ 2 russi russi 4096 /vault/emotion_engine.dat
           root.style.setProperty('--amber-soft-glow', 'rgba(255, 176, 0, 0.2)');
           root.style.setProperty('--amber-dim', '#b37b00');
           root.style.setProperty('--border-amber', 'rgba(255, 176, 0, 0.4)');
-          newHistory.push({ type: 'sys', text: '> [TEMA COMPLETO]: Sistema restaurado para Âmbar Clássico (#ffb000).' });
+          newHistory.push({ type: 'sys', text: '> [TEMA COMPLETO]: Sistema restaurado para OS Standard (#ffb000).' });
         } else {
           root.style.setProperty('--amber-primary', '#00f0ff');
           root.style.setProperty('--amber-bright', '#70f5ff');
