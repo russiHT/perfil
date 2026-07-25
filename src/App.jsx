@@ -6,7 +6,6 @@ import ParticleSphereBg from './components/ParticleSphereBg';
 import TerminalHeader from './components/TerminalHeader';
 import HeroSection from './components/HeroSection';
 import AboutSection from './components/AboutSection';
-import GarageSection from './components/GarageSection';
 import CyberpunkRadio from './components/CyberpunkRadio';
 import ProjectsSection from './components/ProjectsSection';
 import GithubStatsCard from './components/GithubStatsCard';
@@ -156,9 +155,6 @@ export default function App() {
 
           {/* About Section (Pequena biografia - eu sou russi.) */}
           <AboutSection />
-
-          {/* Garage Section (Telemetria Automotiva OBD-II) */}
-          <GarageSection />
 
           {/* Interactive CLI Prompt */}
           <InteractiveCli onOpenDiag={() => setIsDiagOpen(true)} />
