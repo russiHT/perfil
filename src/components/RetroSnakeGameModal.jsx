@@ -128,7 +128,7 @@ export default function RetroSnakeGameModal({ isOpen, onClose }) {
     playBeep(880, 0.1);
   };
 
-  // Keyboard controls (only active when Autopilot is OFF)
+  // Keyboard controls
   useEffect(() => {
     if (!isOpen || isAutopilot) return;
 
@@ -174,7 +174,6 @@ export default function RetroSnakeGameModal({ isOpen, onClose }) {
       setSnake((prevSnake) => {
         let currentNextDir = dirRef.current;
 
-        // Calculate next direction if Autopilot is active
         if (isAutopilot) {
           currentNextDir = getNextAutopilotDirection(prevSnake, food, dirRef.current);
           setDirection(currentNextDir);
@@ -246,14 +245,14 @@ export default function RetroSnakeGameModal({ isOpen, onClose }) {
           maxWidth: '520px',
           background: 'rgba(14, 10, 2, 0.98)',
           border: '1px solid var(--border-amber)',
-          boxShadow: isAutopilot ? '0 0 60px #00ff66' : '0 0 50px var(--amber-glow)',
+          boxShadow: '0 0 50px var(--amber-glow)',
           padding: '24px'
         }}
       >
         {/* Modal Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', borderBottom: '1px solid var(--border-amber)', pb: '12px' }}>
           <div style={{ fontSize: '1rem', fontWeight: '800', color: 'var(--amber-bright)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>🎮 CYBER-SNAKE CRT v2.1</span>
+            <span>[GAME] CYBER-SNAKE CRT v2.1</span>
           </div>
 
           <button onClick={onClose} className="terminal-link" style={{ padding: '4px 10px', fontSize: '0.78rem' }}>
@@ -281,14 +280,14 @@ export default function RetroSnakeGameModal({ isOpen, onClose }) {
             style={{
               padding: '4px 10px',
               fontSize: '0.75rem',
-              background: isAutopilot ? '#00ff66' : 'var(--amber-soft-glow)',
+              background: isAutopilot ? 'var(--amber-primary)' : 'var(--amber-soft-glow)',
               color: isAutopilot ? '#070500' : 'var(--amber-primary)',
               fontWeight: '800'
             }}
-            title="Ativar/Desativar Algoritmo de Inteligência Artificial para Jogar Sozinho"
+            title="Ativar/Desativar Autopiloto"
           >
             <Bot size={14} />
-            <span>{isAutopilot ? '🤖 AUTOPILOT: ON' : '🤖 AUTOPILOT: OFF'}</span>
+            <span>{isAutopilot ? 'AUTOPILOT: ON' : 'AUTOPILOT: OFF'}</span>
           </button>
         </div>
 
@@ -298,7 +297,7 @@ export default function RetroSnakeGameModal({ isOpen, onClose }) {
             width: '100%',
             aspectRatio: '1/1',
             background: '#070500',
-            border: `2px solid ${isAutopilot ? '#00ff66' : 'var(--border-amber)'}`,
+            border: '2px solid var(--border-amber)',
             borderRadius: '6px',
             position: 'relative',
             display: 'grid',
@@ -317,9 +316,9 @@ export default function RetroSnakeGameModal({ isOpen, onClose }) {
             const isFoodItem = food.x === x && food.y === y;
 
             let bg = 'rgba(255, 176, 0, 0.03)';
-            if (isHead) bg = isAutopilot ? '#00ff66' : 'var(--amber-bright)';
-            else if (isBody) bg = isAutopilot ? '#55ff99' : 'var(--amber-primary)';
-            else if (isFoodItem) bg = '#ff0055';
+            if (isHead) bg = 'var(--amber-bright)';
+            else if (isBody) bg = 'var(--amber-primary)';
+            else if (isFoodItem) bg = 'var(--amber-bright)';
 
             return (
               <div
@@ -327,7 +326,7 @@ export default function RetroSnakeGameModal({ isOpen, onClose }) {
                 style={{
                   background: bg,
                   borderRadius: isFoodItem ? '50%' : '1px',
-                  boxShadow: isHead || isFoodItem ? '0 0 8px currentColor' : 'none',
+                  boxShadow: isHead || isFoodItem ? '0 0 8px var(--amber-glow)' : 'none',
                   transition: 'background 0.05s ease'
                 }}
               />
@@ -352,8 +351,8 @@ export default function RetroSnakeGameModal({ isOpen, onClose }) {
             >
               {isGameOver ? (
                 <>
-                  <div style={{ color: '#ff0055', fontSize: '1.4rem', fontWeight: '900', marginBottom: '8px' }}>
-                    GAME OVER!
+                  <div style={{ color: 'var(--amber-bright)', fontSize: '1.4rem', fontWeight: '900', marginBottom: '8px' }}>
+                    GAME OVER
                   </div>
                   <div style={{ color: 'var(--amber-primary)', marginBottom: '20px', fontSize: '0.9rem' }}>
                     Pontuação final: <strong>{score}</strong>
@@ -361,7 +360,7 @@ export default function RetroSnakeGameModal({ isOpen, onClose }) {
                 </>
               ) : (
                 <div style={{ color: 'var(--amber-primary)', marginBottom: '20px', fontSize: '0.9rem' }}>
-                  Use as <strong>setas do teclado</strong> ou ative o modo <strong>🤖 AUTOPILOT</strong> para a IA jogar e vencer sozinha!
+                  Use as <strong>setas do teclado</strong> ou ative o <strong>AUTOPILOT</strong> para a IA jogar!
                 </div>
               )}
 
@@ -369,7 +368,7 @@ export default function RetroSnakeGameModal({ isOpen, onClose }) {
                 onClick={startGame}
                 className="terminal-link"
                 style={{
-                  background: isAutopilot ? '#00ff66' : 'var(--amber-primary)',
+                  background: 'var(--amber-primary)',
                   color: '#0d0a00',
                   padding: '12px 24px',
                   fontSize: '0.95rem',
@@ -386,8 +385,11 @@ export default function RetroSnakeGameModal({ isOpen, onClose }) {
         {/* Direction Controls / Autopilot Notice */}
         <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
           {isAutopilot ? (
-            <div style={{ color: '#00ff66', fontSize: '0.8rem', fontWeight: '800', letterSpacing: '1px' }} className="crt-flicker">
-              &gt; ALGORITMO BFS AUTOPILOTO ATIVO — CALCULANDO ROTA ÓTIMA...
+            <div style={{ color: 'var(--amber-bright)', fontSize: '0.8rem', fontWeight: '700', textAlign: 'center' }} className="crt-flicker">
+              <div>&gt; ALGORITMO AUTOPILOTO ATIVO</div>
+              <div style={{ color: 'var(--amber-dim)', fontSize: '0.76rem', marginTop: '2px' }}>
+                o autopilot e meio burro :(
+              </div>
             </div>
           ) : (
             <>
@@ -415,7 +417,7 @@ export default function RetroSnakeGameModal({ isOpen, onClose }) {
                 </button>
               </div>
               <button
-                onClick={() => dirRef.current.y !== -1 && setDirection({ x: -1, y: 0 })}
+                onClick={() => dirRef.current.y !== -1 && setDirection({ x: 0, y: 1 })}
                 className="terminal-link"
                 style={{ padding: '6px 16px', fontSize: '0.8rem' }}
               >

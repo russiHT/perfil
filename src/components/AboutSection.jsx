@@ -4,7 +4,7 @@ import { Activity, MapPin, Cpu, Clock } from 'lucide-react';
 export default function AboutSection() {
   const metrics = [
     { label: 'STATUS', value: 'online', icon: Activity, pulse: true },
-    { label: 'LOCAL', value: 'brasil 🇧🇷', icon: MapPin },
+    { label: 'LOCAL', value: 'brasil', icon: MapPin },
     { label: 'MODO', value: 'grind', icon: Cpu },
     { label: 'UPTIME', value: 'v2.1', icon: Clock }
   ];

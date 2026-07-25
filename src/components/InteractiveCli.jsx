@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Terminal as TermIcon, Send, Maximize2, Minimize2 } from 'lucide-react';
+import { Terminal as TermIcon, Send, Maximize2, Minimize2, Gamepad2 } from 'lucide-react';
 
 const PHILOSOPHY_QUOTES = [
   { text: "A vida não examinada não vale a pena ser vivida.", author: "Sócrates" },
@@ -174,7 +174,7 @@ export default function InteractiveCli({ onOpenDiag }) {
           playMorseBeeps(morseResult);
           newHistory.push({
             type: 'sys',
-            text: `> [MORSE ENCODER]: "${args}" ➔ ${morseResult}\n> [AUDIO]: Transmitindo frequências de bip CRT (700Hz)...`
+            text: `> [MORSE ENCODER]: "${args}" -> ${morseResult}\n> [AUDIO]: Transmitindo frequências de bip CRT (700Hz)...`
           });
         }
         break;
@@ -186,7 +186,7 @@ export default function InteractiveCli({ onOpenDiag }) {
           const decodedResult = decodeFromMorse(args);
           newHistory.push({
             type: 'sys',
-            text: `> [MORSE DECODER]: ${args} ➔ "${decodedResult}"`
+            text: `> [MORSE DECODER]: ${args} -> "${decodedResult}"`
           });
         }
         break;
@@ -197,7 +197,7 @@ export default function InteractiveCli({ onOpenDiag }) {
         } else {
           try {
             const b64 = btoa(args);
-            newHistory.push({ type: 'sys', text: `> [BASE64 ENCODE]: "${args}" ➔ ${b64}` });
+            newHistory.push({ type: 'sys', text: `> [BASE64 ENCODE]: "${args}" -> ${b64}` });
           } catch (err) {
             newHistory.push({ type: 'sys', text: '> [ERRO]: Texto inválido para codificação Base64.' });
           }
@@ -210,7 +210,7 @@ export default function InteractiveCli({ onOpenDiag }) {
         } else {
           try {
             const decoded = atob(args);
-            newHistory.push({ type: 'sys', text: `> [BASE64 DECODE]: ${args} ➔ "${decoded}"` });
+            newHistory.push({ type: 'sys', text: `> [BASE64 DECODE]: ${args} -> "${decoded}"` });
           } catch (err) {
             newHistory.push({ type: 'sys', text: '> [ERRO]: Hash Base64 inválido.' });
           }
@@ -397,7 +397,8 @@ drwx------ 2 russi russi 4096 /vault/emotion_engine.dat
             style={{ padding: '4px 10px', fontSize: '0.75rem', background: 'var(--amber-soft-glow)' }}
             title="Jogar Mini-Game Retrô"
           >
-            <span>🎮 JOGAR SNAKE</span>
+            <Gamepad2 size={13} />
+            <span>JOGAR SNAKE</span>
           </button>
 
           <button
