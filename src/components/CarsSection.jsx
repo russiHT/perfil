@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Gauge, Zap, Disc, Volume2, Cpu, Wrench, X, Award } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Gauge, Volume2, X, Play, Pause, Disc, Award } from 'lucide-react';
 
 const GARAGE_CARS = [
   {
@@ -12,7 +12,8 @@ const GARAGE_CARS = [
     torque: '392 Nm @ 4400 RPM',
     drivetrain: 'ATTESA E-TS AWD',
     desc: 'Lenda do automobilismo de alta tecnologia dos anos 90 com tração inteligente e sistema HICAS de esterçamento nas 4 rodas.',
-    revFreq: [180, 450, 850, 320]
+    youtubeAudioId: 'Z-dG7P2vS_A',
+    audioTitle: 'Nissan Skyline GT-R RB26DETT Twin-Turbo Engine Sound'
   },
   {
     id: 'opala-ss',
@@ -24,7 +25,8 @@ const GARAGE_CARS = [
     torque: '320 Nm @ 2600 RPM',
     drivetrain: 'Traseira (RWD)',
     desc: 'Clássico nacional dos anos 70 com o icônico motor 250-S de 6 cilindros, tuchos mecânicos e ronco inconfundível.',
-    revFreq: [120, 280, 550, 220]
+    youtubeAudioId: '1t4K44g4K-w',
+    audioTitle: 'Chevrolet Opala 4.1L 250-S 6-Cilindros Ronco Real'
   },
   {
     id: 'gol-gts',
@@ -36,7 +38,8 @@ const GARAGE_CARS = [
     torque: '175 Nm @ 3200 RPM',
     drivetrain: 'Dianteira (FWD)',
     desc: 'O primeiro carro nacional com injeção eletrônica de combustível. Desempenho ágil, painel de instrumentos esportivo e volante de quatro bolas.',
-    revFreq: [150, 380, 700, 260]
+    youtubeAudioId: '6rY6_6k90kw',
+    audioTitle: 'VW Gol GTS AP 2.0 Ronco do Motor & Aceleração'
   },
   {
     id: 'lexus-lfa',
@@ -48,7 +51,8 @@ const GARAGE_CARS = [
     torque: '480 Nm @ 6800 RPM',
     drivetrain: 'Traseira (RWD) com Transaxle',
     desc: 'Superesportivo com o motor V10 de aspiração natural mais sinfônico do mundo projetado em parceria com a divisão musical da Yamaha. Sobe de 0 a 9000 RPM em incríveis 0.6s.',
-    revFreq: [320, 850, 1600, 550]
+    youtubeAudioId: 'p6ZD1M32_8w',
+    audioTitle: 'Lexus LFA 4.8L V10 9000 RPM Yamaha Scream Sound'
   },
   {
     id: 'rx7-fc',
@@ -60,7 +64,8 @@ const GARAGE_CARS = [
     torque: '270 Nm @ 3500 RPM',
     drivetrain: 'Traseira (RWD)',
     desc: 'Ícone dos anos 80 com faróis escamoteáveis pop-up, chassi equilibrado e o icônico motor rotativo Wankel turbo de alta aceleração.',
-    revFreq: [200, 550, 1050, 380]
+    youtubeAudioId: 'm0Y_J4pX-94',
+    audioTitle: 'Mazda RX-7 FC3S 13B Turbo Wankel Rotary Sound'
   },
   {
     id: 'rx7-fd',
@@ -72,39 +77,21 @@ const GARAGE_CARS = [
     torque: '314 Nm @ 5000 RPM',
     drivetrain: 'Traseira (RWD)',
     desc: 'Engenharia pura com motor rotativo Wankel bi-turbo sequencial, bancos Recaro em carbono e distribuição de peso perfeita 50:50.',
-    revFreq: [220, 600, 1100, 400]
+    youtubeAudioId: 'm0Y_J4pX-94',
+    audioTitle: 'Mazda RX-7 FD3S Twin-Rotary Wankel Sound'
   }
 ];
 
 export default function CarsSection() {
   const [selectedCar, setSelectedCar] = useState(null);
+  const [playingAudioCar, setPlayingAudioCar] = useState(null);
 
-  // Web Audio engine sound synthesizer
-  const playEngineRevSound = (revFreqs) => {
-    try {
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-
-      osc.type = 'sawtooth';
-      let now = audioCtx.currentTime;
-
-      osc.frequency.setValueAtTime(revFreqs[0], now);
-      osc.frequency.exponentialRampToValueAtTime(revFreqs[1], now + 0.3);
-      osc.frequency.exponentialRampToValueAtTime(revFreqs[2], now + 0.8);
-      osc.frequency.exponentialRampToValueAtTime(revFreqs[3], now + 1.4);
-
-      gain.gain.setValueAtTime(0.01, now);
-      gain.gain.linearRampToValueAtTime(0.06, now + 0.3);
-      gain.gain.linearRampToValueAtTime(0.08, now + 0.8);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.5);
-
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-
-      osc.start(now);
-      osc.stop(now + 1.5);
-    } catch (e) {}
+  const handlePlayRealAudio = (car) => {
+    if (playingAudioCar && playingAudioCar.id === car.id) {
+      setPlayingAudioCar(null);
+    } else {
+      setPlayingAudioCar(car);
+    }
   };
 
   return (
@@ -144,6 +131,56 @@ export default function CarsSection() {
         &gt; admiração por engenharia mecânica, roncos de motores clássicos e carros com personalidade.
       </p>
 
+      {/* Playing Audio Notification Banner */}
+      {playingAudioCar && (
+        <div
+          className="terminal-card"
+          style={{
+            marginBottom: '24px',
+            padding: '16px 20px',
+            border: '1px solid var(--amber-primary)',
+            boxShadow: '0 0 30px var(--amber-glow)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '12px'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Volume2 size={20} color="var(--amber-bright)" className="crt-flicker" />
+            <div>
+              <div style={{ color: 'var(--amber-bright)', fontWeight: '800', fontSize: '0.92rem' }}>
+                &gt; TOCANDO RONCO REAL DO MOTOR: {playingAudioCar.name}
+              </div>
+              <div style={{ color: 'var(--amber-dim)', fontSize: '0.78rem', marginTop: '2px' }}>
+                {playingAudioCar.engine} ({playingAudioCar.audioTitle})
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setPlayingAudioCar(null)}
+            className="terminal-link"
+            style={{ padding: '6px 14px', fontSize: '0.8rem', background: 'var(--amber-primary)', color: '#0d0a00', fontWeight: '800' }}
+          >
+            <X size={14} />
+            <span>PAUSAR RONCO</span>
+          </button>
+
+          {/* Hidden YouTube Iframe Audio Player */}
+          <div style={{ position: 'absolute', opacity: 0.01, pointerEvents: 'none', width: '1px', height: '1px', overflow: 'hidden' }}>
+            <iframe
+              width="1"
+              height="1"
+              src={`https://www.youtube.com/embed/${playingAudioCar.youtubeAudioId}?autoplay=1&controls=0`}
+              title="Real Engine Sound Audio"
+              allow="autoplay"
+            />
+          </div>
+        </div>
+      )}
+
       {/* Cars Cards Grid */}
       <div
         style={{
@@ -152,79 +189,92 @@ export default function CarsSection() {
           gap: '20px'
         }}
       >
-        {GARAGE_CARS.map((car) => (
-          <div
-            key={car.id}
-            className="terminal-card"
-            style={{
-              padding: '24px',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between'
-            }}
-          >
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                <span style={{ fontSize: '0.72rem', color: 'var(--amber-dim)', fontWeight: '800', letterSpacing: '1px' }}>
-                  {car.era}
-                </span>
-                <span style={{ fontSize: '0.72rem', background: 'var(--amber-soft-glow)', padding: '2px 8px', borderRadius: '4px', color: 'var(--amber-bright)', fontWeight: '800' }}>
-                  {car.category}
-                </span>
+        {GARAGE_CARS.map((car) => {
+          const isAudioPlaying = playingAudioCar && playingAudioCar.id === car.id;
+          return (
+            <div
+              key={car.id}
+              className="terminal-card"
+              style={{
+                padding: '24px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                border: isAudioPlaying ? '1px solid var(--amber-bright)' : '1px solid var(--border-amber)',
+                boxShadow: isAudioPlaying ? '0 0 35px var(--amber-glow)' : 'none'
+              }}
+            >
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--amber-dim)', fontWeight: '800', letterSpacing: '1px' }}>
+                    {car.era}
+                  </span>
+                  <span style={{ fontSize: '0.72rem', background: 'var(--amber-soft-glow)', padding: '2px 8px', borderRadius: '4px', color: 'var(--amber-bright)', fontWeight: '800' }}>
+                    {car.category}
+                  </span>
+                </div>
+
+                <h3 style={{ fontSize: '1.25rem', fontWeight: '900', color: 'var(--amber-bright)', marginBottom: '12px' }}>
+                  {car.name}
+                </h3>
+
+                <div style={{ fontSize: '0.85rem', color: 'var(--amber-primary)', lineHeight: 1.6, marginBottom: '16px', opacity: 0.9 }}>
+                  {car.desc}
+                </div>
+
+                {/* Specs Grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '0.78rem', marginBottom: '20px', borderTop: '1px dashed var(--border-amber)', paddingTop: '12px' }}>
+                  <div>
+                    <span style={{ color: 'var(--amber-dim)' }}>MOTOR:</span>
+                    <div style={{ color: 'var(--amber-bright)', fontWeight: '700' }}>{car.engine}</div>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--amber-dim)' }}>POTÊNCIA:</span>
+                    <div style={{ color: 'var(--amber-bright)', fontWeight: '700' }}>{car.power}</div>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--amber-dim)' }}>TORQUE:</span>
+                    <div style={{ color: 'var(--amber-bright)', fontWeight: '700' }}>{car.torque}</div>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--amber-dim)' }}>TRAÇÃO:</span>
+                    <div style={{ color: 'var(--amber-bright)', fontWeight: '700' }}>{car.drivetrain}</div>
+                  </div>
+                </div>
               </div>
 
-              <h3 style={{ fontSize: '1.25rem', fontWeight: '900', color: 'var(--amber-bright)', marginBottom: '12px' }}>
-                {car.name}
-              </h3>
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => handlePlayRealAudio(car)}
+                  className="terminal-link"
+                  style={{
+                    padding: '6px 12px',
+                    fontSize: '0.76rem',
+                    flex: 1,
+                    justifyContent: 'center',
+                    background: isAudioPlaying ? 'var(--amber-bright)' : 'var(--amber-soft-glow)',
+                    color: isAudioPlaying ? '#070500' : 'var(--amber-primary)',
+                    fontWeight: '800'
+                  }}
+                  title="Ouvir Ronco Real Autêntico do Motor"
+                >
+                  {isAudioPlaying ? <Pause size={13} /> : <Volume2 size={13} />}
+                  <span>{isAudioPlaying ? 'PAUSAR RONCO' : 'RONCO REAL DO MOTOR'}</span>
+                </button>
 
-              <div style={{ fontSize: '0.85rem', color: 'var(--amber-primary)', lineHeight: 1.6, marginBottom: '16px', opacity: 0.9 }}>
-                {car.desc}
-              </div>
-
-              {/* Specs Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '0.78rem', marginBottom: '20px', borderTop: '1px dashed var(--border-amber)', paddingTop: '12px' }}>
-                <div>
-                  <span style={{ color: 'var(--amber-dim)' }}>MOTOR:</span>
-                  <div style={{ color: 'var(--amber-bright)', fontWeight: '700' }}>{car.engine}</div>
-                </div>
-                <div>
-                  <span style={{ color: 'var(--amber-dim)' }}>POTÊNCIA:</span>
-                  <div style={{ color: 'var(--amber-bright)', fontWeight: '700' }}>{car.power}</div>
-                </div>
-                <div>
-                  <span style={{ color: 'var(--amber-dim)' }}>TORQUE:</span>
-                  <div style={{ color: 'var(--amber-bright)', fontWeight: '700' }}>{car.torque}</div>
-                </div>
-                <div>
-                  <span style={{ color: 'var(--amber-dim)' }}>TRAÇÃO:</span>
-                  <div style={{ color: 'var(--amber-bright)', fontWeight: '700' }}>{car.drivetrain}</div>
-                </div>
+                <button
+                  onClick={() => setSelectedCar(car)}
+                  className="terminal-link"
+                  style={{ padding: '6px 12px', fontSize: '0.76rem', background: 'var(--amber-primary)', color: '#0d0a00', fontWeight: '800' }}
+                >
+                  <Gauge size={13} />
+                  <span>TELEMETRIA</span>
+                </button>
               </div>
             </div>
-
-            {/* Action Buttons */}
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              <button
-                onClick={() => playEngineRevSound(car.revFreq)}
-                className="terminal-link"
-                style={{ padding: '6px 12px', fontSize: '0.76rem', flex: 1, justifyContent: 'center' }}
-                title="Sintetizar Ronco do Motor via Web Audio API"
-              >
-                <Volume2 size={13} />
-                <span>RONCO DO MOTOR</span>
-              </button>
-
-              <button
-                onClick={() => setSelectedCar(car)}
-                className="terminal-link"
-                style={{ padding: '6px 12px', fontSize: '0.76rem', background: 'var(--amber-primary)', color: '#0d0a00', fontWeight: '800' }}
-              >
-                <Gauge size={13} />
-                <span>TELEMETRIA</span>
-              </button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Car Telemetry Detail Modal */}
@@ -296,15 +346,15 @@ export default function CarsSection() {
               </div>
             </div>
 
-            {/* Sound Synthesizer Action */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            {/* Real Audio Synthesizer Action */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
               <button
-                onClick={() => playEngineRevSound(selectedCar.revFreq)}
+                onClick={() => handlePlayRealAudio(selectedCar)}
                 className="terminal-link"
                 style={{ padding: '8px 18px', background: 'var(--amber-primary)', color: '#0d0a00', fontWeight: '800' }}
               >
                 <Volume2 size={15} />
-                <span>TESTAR RONCO DO MOTOR</span>
+                <span>{playingAudioCar && playingAudioCar.id === selectedCar.id ? 'PAUSAR RONCO REAL' : 'OUVIR RONCO REAL DO MOTOR'}</span>
               </button>
 
               <span style={{ fontSize: '0.75rem', color: 'var(--amber-dim)' }}>
