@@ -111,6 +111,46 @@ const fetchGithubStats = async () => {
   const totalStars = reposData.reduce((acc, r) => acc + (r.stargazers_count || 0), 0);
   return { publicRepos: userData.public_repos, totalStars };
 };`
+  },
+  {
+    id: 'sphere-3d',
+    title: '5. Esfera 3D de Partículas (Mouse & Scroll)',
+    file: 'src/components/ParticleSphereBg.jsx',
+    icon: Terminal,
+    desc: 'Projeção de perspectiva 3D (FOV) com campo de força repulsivo no movimento do mouse e rotação acelerada via evento de scroll.',
+    code: `// Projeção 3D, força repulsiva do mouse e rotação pelo scroll
+const handleMouseMove = (e) => {
+  const normX = (e.clientX / width - 0.5) * 2;
+  const normY = (e.clientY / height - 0.5) * 2;
+  targetRotY = normX * 0.5;
+  targetRotX = -normY * 0.5;
+
+  applyPushForce(e.clientX, e.clientY, 110, 3.5);
+};
+
+const handleScroll = () => {
+  targetScrollPos = window.scrollY;
+};
+
+// Aplica campo de força repulsiva no plano projetado 3D
+const applyPushForce = (px, py, pushRadius, forceMultiplier) => {
+  particles.forEach((p) => {
+    const scale = fov / (fov + p.z + 100);
+    const projX = centerX + p.x * scale;
+    const projY = centerY + p.y * scale;
+
+    const dx = projX - px;
+    const dy = projY - py;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    if (dist < pushRadius) {
+      const force = (1 - dist / pushRadius) * forceMultiplier;
+      const angle = Math.atan2(dy, dx);
+      p.vx += Math.cos(angle) * force;
+      p.vy += Math.sin(angle) * force;
+    }
+  });
+};`
   }
 ];
 
