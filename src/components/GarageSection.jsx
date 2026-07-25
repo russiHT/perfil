@@ -3,75 +3,75 @@ import { Gauge, Cpu, Flame, Moon, Sparkles, Sliders, ChevronRight, Zap } from 'l
 
 const GARAGE_CARS = [
   {
-    id: 'r34',
-    name: 'Nissan Skyline GT-R (BNR34)',
-    category: 'JDM',
-    engine: 'RB26DETT Twin-Turbo',
-    power: '320 CV @ 6800 RPM',
-    torque: '40.0 Kgfm @ 4400 RPM',
-    trans: '6-Speed Manual Getrag',
-    drive: 'ATTESA E-TS Pro AWD',
-    topSpeed: '250 km/h (Limitado)',
-    desc: 'O ícone do automobilismo japonês com tração integral e duplo turbo.',
+    id: 'gol-gti',
+    name: 'Volkswagen Gol GTI 2.0',
+    category: 'Nacional / Ícone dos Anos 90',
+    engine: '2.0 AP 8000 (Injeção EEC-IV)',
+    power: '120 CV @ 5600 RPM',
+    torque: '17.5 Kgfm @ 3200 RPM',
+    trans: 'Manual 5 Marchas',
+    drive: 'FWD (Tração Dianteira)',
+    topSpeed: '185 km/h',
+    desc: 'O primeiro carro brasileiro com injeção eletrônica de fábrica e painel satélite clássico.',
     specs: [
-      { label: 'Cilindrada', val: '2.568 cc L6' },
-      { label: 'Redline', val: '8.000 RPM' },
-      { label: 'Peso', val: '1.560 kg' },
-      { label: '0-100 km/h', val: '4.8s' }
+      { label: 'Cilindrada', val: '1.984 cc AP' },
+      { label: 'Redline', val: '6.500 RPM' },
+      { label: 'Peso', val: '1.020 kg' },
+      { label: '0-100 km/h', val: '8.8s' }
     ]
   },
   {
-    id: 'rx7',
-    name: 'Mazda RX-7 Spirit R (FD3S)',
-    category: 'Rotary Legend',
-    engine: '13B-REW Sequential Twin-Turbo Wankel',
-    power: '280 CV @ 6500 RPM',
-    torque: '32.0 Kgfm @ 5000 RPM',
-    trans: '5-Speed Manual',
-    drive: 'RWD com LSD Torsen',
-    topSpeed: '255 km/h',
-    desc: 'Motor rotativo Wankel bi-turbo sequencial com distribuição de peso perfeita 50:50.',
+    id: 'opala',
+    name: 'Chevrolet Opala Comodoro 4.1',
+    category: 'Nacional / 6 Cilindros Clássico',
+    engine: '4.1L 250-S 6 Cilindros em Linha',
+    power: '171 CV @ 4800 RPM',
+    torque: '32.5 Kgfm @ 2600 RPM',
+    trans: 'Manual 5 Marchas',
+    drive: 'RWD (Tração Traseira)',
+    topSpeed: '190 km/h',
+    desc: 'O lendário 6 cilindros em linha brasileiro com ronco inconfundível e tração traseira raiz.',
     specs: [
-      { label: 'Cilindrada', val: '1.308 cc (Rotativo)' },
-      { label: 'Redline', val: '8.200 RPM' },
-      { label: 'Peso', val: '1.270 kg' },
-      { label: '0-100 km/h', val: '5.1s' }
+      { label: 'Cilindrada', val: '4.093 cc L6' },
+      { label: 'Redline', val: '5.500 RPM' },
+      { label: 'Peso', val: '1.380 kg' },
+      { label: '0-100 km/h', val: '9.5s' }
     ]
   },
   {
-    id: 'porsche911',
-    name: 'Porsche 911 Turbo (930)',
-    category: 'Euro Classic',
-    engine: '3.3L Flat-6 Air-Cooled Turbo',
-    power: '300 CV @ 5500 RPM',
-    torque: '41.2 Kgfm @ 4000 RPM',
-    trans: '4-Speed Manual Heavy Duty',
-    drive: 'RWD (Motor Traseiro)',
-    topSpeed: '260 km/h',
-    desc: 'A lendária alemã com turbocompressor e tração traseira.',
+    id: 'uno-turbo',
+    name: 'Fiat Uno Turbo i.e. 1.4',
+    category: 'Nacional / Pocket Rocket',
+    engine: '1.4L Turbo i.e. Garrett T2',
+    power: '118 CV @ 5750 RPM',
+    torque: '17.3 Kgfm @ 3500 RPM',
+    trans: 'Manual 5 Marchas',
+    drive: 'FWD (Tração Dianteira)',
+    topSpeed: '195 km/h',
+    desc: 'O lendário esportivo compacto turbinado de fábrica no Brasil nos anos 90.',
     specs: [
-      { label: 'Cilindrada', val: '3.299 cc Flat-6' },
-      { label: 'Redline', val: '6.700 RPM' },
-      { label: 'Peso', val: '1.335 kg' },
-      { label: '0-100 km/h', val: '5.0s' }
+      { label: 'Cilindrada', val: '1.372 cc Turbo' },
+      { label: 'Redline', val: '6.800 RPM' },
+      { label: 'Peso', val: '975 kg' },
+      { label: '0-100 km/h', val: '7.9s' }
     ]
   },
   {
-    id: 'hot-hatch',
-    name: 'Volkswagen Golf GTI (Stage 2)',
-    category: 'Hot Hatch / Daily Project',
-    engine: '2.0 TSI EA888 Gen 3',
-    power: '310 CV @ 5800 RPM',
-    torque: '45.0 Kgfm @ 2500 RPM',
-    trans: '6-Speed DSG / Manual',
-    drive: 'FWD com Blocante VAQ',
-    topSpeed: '270 km/h',
-    desc: 'Projeto com remap Stage 2, downpipe em inox, intake esportivo e pops & bangs.',
+    id: 'astra',
+    name: 'Chevrolet Astra 2.0 16V (Stage 2)',
+    category: 'Nacional / Street Project',
+    engine: '2.0 16V Família II',
+    power: '165 CV @ 6000 RPM',
+    torque: '21.0 Kgfm @ 4000 RPM',
+    trans: 'Manual 5 Marchas F23',
+    drive: 'FWD (Tração Dianteira)',
+    topSpeed: '215 km/h',
+    desc: 'Projeto nacional com coletor 4x1 em inox, escapamento esportivo e acerto na injeção.',
     specs: [
-      { label: 'Cilindrada', val: '1.984 cc Turbo' },
-      { label: 'Redline', val: '7.000 RPM' },
-      { label: 'Modificações', val: 'Downpipe + Remap' },
-      { label: '0-100 km/h', val: '5.2s' }
+      { label: 'Cilindrada', val: '1.998 cc 16V' },
+      { label: 'Redline', val: '7.200 RPM' },
+      { label: 'Modificações', val: 'Coletor 4x1 + Remap' },
+      { label: '0-100 km/h', val: '8.2s' }
     ]
   }
 ];
@@ -80,10 +80,10 @@ export default function GarageSection({ isNightDrive, onToggleNightDrive }) {
   const [selectedCar, setSelectedCar] = useState(GARAGE_CARS[0]);
 
   const garageMetrics = [
-    { label: 'MOTORIZADORAS', val: 'TURBO & ROTATIVO', icon: Cpu },
+    { label: 'MOTORIZADORAS', val: 'TURBO & AP 2.0 / 6 CIL', icon: Cpu },
     { label: 'CÂMBIO', val: 'MANUAL PREFERIDO', icon: Sliders },
-    { label: 'REDLINE MAX', val: '8.200 RPM', icon: Flame },
-    { label: 'ESTILO', val: 'JDM & HOT HATCH', icon: Gauge }
+    { label: 'REDLINE MAX', val: '7.200 RPM', icon: Flame },
+    { label: 'ESTILO', val: 'NACIONAIS & BRASILEIROS', icon: Gauge }
   ];
 
   const playRevBeep = () => {
