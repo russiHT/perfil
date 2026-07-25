@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { animate } from 'animejs';
 
-export default function ParticleSphereBg({ isZenMode = false }) {
+export default function ParticleSphereBg({ isZenMode = false, isNightDrive = false }) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -11,6 +11,7 @@ export default function ParticleSphereBg({ isZenMode = false }) {
 
     let width = (canvas.width = window.innerWidth);
     let height = (canvas.height = window.innerHeight);
+    let roadSpeed = 0;
 
     // 1. Larger Single Main 3D Sphere (220 particles, 0.54 radius)
     const particleCount = 220;
@@ -207,6 +208,41 @@ export default function ParticleSphereBg({ isZenMode = false }) {
 
       ctx.fillStyle = '#0a0800';
       ctx.fillRect(0, 0, width, height);
+
+      // Render 3D Night Drive Highway Grid when active
+      if (isNightDrive) {
+        const roadY = height * 0.58;
+        const horizonX = width / 2;
+
+        ctx.strokeStyle = themePrimary;
+
+        // Perspective Lane Lines
+        const laneCount = 10;
+        for (let i = -laneCount; i <= laneCount; i++) {
+          const startX = horizonX + (i * width * 0.03);
+          const endX = horizonX + (i * width * 0.45);
+          ctx.globalAlpha = 0.25;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(startX, roadY);
+          ctx.lineTo(endX, height);
+          ctx.stroke();
+        }
+
+        // Horizontal Road Grid Lines moving forward
+        roadSpeed = (roadSpeed + 3) % 35;
+        for (let z = 0; z < height - roadY; z += 35) {
+          const y = roadY + ((z + roadSpeed) % (height - roadY));
+          const alpha = ((y - roadY) / (height - roadY)) * 0.45;
+          ctx.globalAlpha = alpha;
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(width, y);
+          ctx.stroke();
+        }
+        ctx.globalAlpha = 1.0;
+      }
 
       const centerX = width / 2;
       const centerY = height / 2;

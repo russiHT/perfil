@@ -140,7 +140,6 @@ export default function InteractiveCli({ onOpenDiag }) {
 - typing / wpm          : Teste de velocidade de digitação de código em WPM
 - minesweeper / mines   : Mini-game retrô Campo Minado CRT
 - snake / game          : Jogar mini-game retrô Cyber-Snake CRT
-- car / garage          : Exibir garagem de carros clássicos e telemetria
 - morse <texto>         : Codificar texto para Código Morse (com áudio bip CRT)
 - unmorse <código>      : Decodificar Código Morse para texto
 - b64encode <texto>     : Codificar texto para Base64
@@ -156,22 +155,6 @@ export default function InteractiveCli({ onOpenDiag }) {
 - github                : Abrir repositório GitHub (russiHT)
 - contact               : Formas de contato
 - clear                 : Limpar tela`
-        });
-        break;
-
-      case 'car':
-      case 'carros':
-      case 'garage':
-        newHistory.push({
-          type: 'sys',
-          text: `> [GARAGEM AUTOMOTIVA v2.1]:
-- Nissan Skyline GT-R (R32 / R34) [2.6L Twin-Turbo RB26DETT // 280 HP]
-- Chevrolet Opala SS 4.1L         [4.1L 250-S 6-Cilindros // 171 HP]
-- VW Gol Quadrado GTS / GTI       [2.0L AP 2000 Injeção LE-Jetronic // 120 HP]
-- Lexus LFA (LFA10)               [4.8L V10 N/A 1LR-GUE Yamaha // 560 HP]
-- Mazda RX-7 Savanna (FC3S)       [1.3L Turbo Wankel 13B-DEI // 205 HP]
-- Mazda RX-7 Spirit R (FD3S)      [1.3L Twin-Rotary Wankel 13B-REW // 280 HP]
-> Role até a seção "carros_ & motores" para testar a telemetria e o ronco dos motores via Web Audio!`
         });
         break;
 
@@ -198,6 +181,14 @@ export default function InteractiveCli({ onOpenDiag }) {
         }
         break;
       }
+
+      case 'drive':
+      case 'nightdrive':
+      case 'garagem':
+      case 'garage':
+        window.dispatchEvent(new CustomEvent('toggle-night-drive'));
+        newHistory.push({ type: 'sys', text: '> [NIGHT DRIVE ENGINE]: Alternando modo Piloto Noturno / Highway Grid...' });
+        break;
 
       case 'typing':
       case 'wpm':

@@ -11,9 +11,9 @@ import ProjectsSection from './components/ProjectsSection';
 import GithubStatsCard from './components/GithubStatsCard';
 import InteractiveCli from './components/InteractiveCli';
 import ContactSection from './components/ContactSection';
-import CarsSection from './components/CarsSection';
 import TerminalFooter from './components/TerminalFooter';
 import SystemDiagnosticPanel from './components/SystemDiagnosticPanel';
+import GarageSection from './components/GarageSection';
 import RetroSnakeGameModal from './components/RetroSnakeGameModal';
 import DevTypingSpeedModal from './components/DevTypingSpeedModal';
 import RetroMinesweeperModal from './components/RetroMinesweeperModal';
@@ -27,6 +27,7 @@ export default function App() {
   const [isGameOpen, setIsGameOpen] = useState(false);
   const [isTypingOpen, setIsTypingOpen] = useState(false);
   const [isMinesOpen, setIsMinesOpen] = useState(false);
+  const [isNightDrive, setIsNightDrive] = useState(false);
 
   const playClickSound = () => {
     if (isMuted) return;
@@ -57,15 +58,18 @@ export default function App() {
     const handleOpenGame = () => setIsGameOpen(true);
     const handleOpenTyping = () => setIsTypingOpen(true);
     const handleOpenMines = () => setIsMinesOpen(true);
+    const handleToggleNightDrive = () => setIsNightDrive(prev => !prev);
 
     window.addEventListener('open-snake-game', handleOpenGame);
     window.addEventListener('open-typing-game', handleOpenTyping);
     window.addEventListener('open-minesweeper-game', handleOpenMines);
+    window.addEventListener('toggle-night-drive', handleToggleNightDrive);
 
     return () => {
       window.removeEventListener('open-snake-game', handleOpenGame);
       window.removeEventListener('open-typing-game', handleOpenTyping);
       window.removeEventListener('open-minesweeper-game', handleOpenMines);
+      window.removeEventListener('toggle-night-drive', handleToggleNightDrive);
     };
   }, []);
 
@@ -92,8 +96,8 @@ export default function App() {
       <DevTypingSpeedModal isOpen={isTypingOpen} onClose={() => setIsTypingOpen(false)} />
       <RetroMinesweeperModal isOpen={isMinesOpen} onClose={() => setIsMinesOpen(false)} />
 
-      {/* Interactive 3D Connected Particle Sphere Background */}
-      <ParticleSphereBg isZenMode={isZenMode} />
+      {/* Interactive 3D Connected Particle Sphere & Night Drive Highway Background */}
+      <ParticleSphereBg isZenMode={isZenMode} isNightDrive={isNightDrive} />
 
       {/* Draggable Corner Cyberpunk Radio Player (Global Mute Sync) */}
       {!isLoading && <CyberpunkRadio globalMute={isMuted} />}
@@ -166,8 +170,11 @@ export default function App() {
           {/* Projects / Registros Section */}
           <ProjectsSection />
 
-          {/* Cars / Garagem Retrô & Motores Section */}
-          <CarsSection />
+          {/* Garage Specs / Automotive Section */}
+          <GarageSection
+            isNightDrive={isNightDrive}
+            onToggleNightDrive={() => setIsNightDrive(!isNightDrive)}
+          />
 
           {/* Contact / Canal Aberto Section */}
           <ContactSection />
