@@ -3,6 +3,12 @@ import { Trophy, RotateCcw, X, Play, Flag, ShieldAlert, CheckCircle2, Bot } from
 
 const BOARD_SIZE = 9;
 const MINES_COUNT = 10;
+const CORNERS = [
+  { r: 0, c: 0 },
+  { r: 0, c: BOARD_SIZE - 1 },
+  { r: BOARD_SIZE - 1, c: 0 },
+  { r: BOARD_SIZE - 1, c: BOARD_SIZE - 1 }
+];
 
 export default function RetroMinesweeperModal({ isOpen, onClose }) {
   const [board, setBoard] = useState([]);
@@ -180,87 +186,105 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
     return newBoard;
   };
 
-  // Autopilot Solver Bot Logic Loop
+  // High-Performance Non-Stalling Autopilot Solver Bot Loop
   useEffect(() => {
-    if (!isOpen || !isPlaying || isGameOver || isWon || !isAutopilot || board.length === 0) return;
+    if (!isOpen || !isPlaying || isGameOver || isWon || !isAutopilot) return;
 
     const botInterval = setInterval(() => {
-      // 1. If board is completely unrevealed, reveal center cell
-      const hasAnyRevealed = board.some(row => row.some(cell => cell.isRevealed));
-      if (!hasAnyRevealed) {
-        revealCell(4, 4);
-        return;
-      }
+      setBoard((prevBoard) => {
+        if (!prevBoard || prevBoard.length === 0) return prevBoard;
 
-      let actionTaken = false;
-      let newBoard = board.map(row => row.map(cell => ({ ...cell })));
+        // 1. Check if any cell is revealed
+        const hasAnyRevealed = prevBoard.some(row => row.some(cell => cell.isRevealed));
 
-      const getNeighbors = (r, c) => {
-        const neighbors = [];
-        for (let dr = -1; dr <= 1; dr++) {
-          for (let dc = -1; dc <= 1; dc++) {
-            if (dr === 0 && dc === 0) continue;
-            const nr = r + dr;
-            const nc = c + dc;
-            if (nr >= 0 && nr < BOARD_SIZE && nc >= 0 && nc < BOARD_SIZE) {
-              neighbors.push(newBoard[nr][nc]);
+        if (!hasAnyRevealed) {
+          // Pick a random corner tile at the start!
+          const openCorners = CORNERS.filter(c => !prevBoard[c.r][c.c].isRevealed && !prevBoard[c.r][c.c].isFlagged);
+          const pick = openCorners.length > 0
+            ? openCorners[Math.floor(Math.random() * openCorners.length)]
+            : { r: 0, c: 0 };
+          return revealCell(pick.r, pick.c, prevBoard);
+        }
+
+        let newBoard = prevBoard.map(row => row.map(cell => ({ ...cell })));
+        let actionTaken = false;
+
+        const getNeighbors = (r, c, b) => {
+          const neighbors = [];
+          for (let dr = -1; dr <= 1; dr++) {
+            for (let dc = -1; dc <= 1; dc++) {
+              if (dr === 0 && dc === 0) continue;
+              const nr = r + dr;
+              const nc = c + dc;
+              if (nr >= 0 && nr < BOARD_SIZE && nc >= 0 && nc < BOARD_SIZE) {
+                neighbors.push(b[nr][nc]);
+              }
             }
           }
-        }
-        return neighbors;
-      };
+          return neighbors;
+        };
 
-      // 2. Guaranteed deductions
-      for (let r = 0; r < BOARD_SIZE; r++) {
-        for (let c = 0; c < BOARD_SIZE; c++) {
-          const cell = newBoard[r][c];
-          if (!cell.isRevealed || cell.neighborMines === 0) continue;
+        // 2. Deterministic deduction rules
+        for (let r = 0; r < BOARD_SIZE; r++) {
+          for (let c = 0; c < BOARD_SIZE; c++) {
+            const cell = newBoard[r][c];
+            if (!cell.isRevealed || cell.neighborMines === 0) continue;
 
-          const neighbors = getNeighbors(r, c);
-          const hidden = neighbors.filter(n => !n.isRevealed && !n.isFlagged);
-          const flagged = neighbors.filter(n => n.isFlagged);
+            const neighbors = getNeighbors(r, c, newBoard);
+            const hidden = neighbors.filter(n => !n.isRevealed && !n.isFlagged);
+            const flagged = neighbors.filter(n => n.isFlagged);
 
-          // All remaining hidden neighbors are mines
-          if (hidden.length > 0 && hidden.length + flagged.length === cell.neighborMines) {
-            hidden.forEach(n => {
-              toggleFlag(null, n.r, n.c, newBoard);
-            });
-            actionTaken = true;
-            break;
+            // Rule A: All remaining hidden neighbors are mines -> Flag them
+            if (hidden.length > 0 && hidden.length + flagged.length === cell.neighborMines) {
+              hidden.forEach(n => {
+                newBoard[n.r][n.c].isFlagged = true;
+                setFlagsLeft(f => Math.max(0, f - 1));
+                playSound(800, 'triangle', 0.06);
+              });
+              actionTaken = true;
+              break;
+            }
+
+            // Rule B: All mines are flagged, remaining hidden neighbors are safe -> Reveal
+            if (flagged.length === cell.neighborMines && hidden.length > 0) {
+              const safe = hidden[0];
+              return revealCell(safe.r, safe.c, newBoard);
+            }
           }
-
-          // All mines are flagged, remaining hidden neighbors are safe
-          if (flagged.length === cell.neighborMines && hidden.length > 0) {
-            hidden.forEach(n => {
-              revealCell(n.r, n.c, newBoard);
-            });
-            actionTaken = true;
-            break;
-          }
+          if (actionTaken) break;
         }
-        if (actionTaken) break;
-      }
 
-      // 3. Fallback guess if no deterministic move found
-      if (!actionTaken) {
-        const candidates = [];
+        if (actionTaken) return newBoard;
+
+        // 3. Fallback move if no 100% deterministic move found:
+        // Prioritize picking an unrevealed corner tile
+        const openCorners = CORNERS.filter(c => !newBoard[c.r][c.c].isRevealed && !newBoard[c.r][c.c].isFlagged);
+        if (openCorners.length > 0) {
+          const cornerPick = openCorners[Math.floor(Math.random() * openCorners.length)];
+          return revealCell(cornerPick.r, cornerPick.c, newBoard);
+        }
+
+        // Otherwise pick any random unrevealed unflagged tile
+        const unrevealedTiles = [];
         for (let r = 0; r < BOARD_SIZE; r++) {
           for (let c = 0; c < BOARD_SIZE; c++) {
             if (!newBoard[r][c].isRevealed && !newBoard[r][c].isFlagged) {
-              candidates.push(newBoard[r][c]);
+              unrevealedTiles.push(newBoard[r][c]);
             }
           }
         }
 
-        if (candidates.length > 0) {
-          const randomPick = candidates[Math.floor(Math.random() * candidates.length)];
-          revealCell(randomPick.r, randomPick.c);
+        if (unrevealedTiles.length > 0) {
+          const randomPick = unrevealedTiles[Math.floor(Math.random() * unrevealedTiles.length)];
+          return revealCell(randomPick.r, randomPick.c, newBoard);
         }
-      }
-    }, 280);
+
+        return newBoard;
+      });
+    }, 220);
 
     return () => clearInterval(botInterval);
-  }, [isOpen, isPlaying, isGameOver, isWon, isAutopilot, board]);
+  }, [isOpen, isPlaying, isGameOver, isWon, isAutopilot]);
 
   if (!isOpen) return null;
 
