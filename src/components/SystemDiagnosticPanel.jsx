@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Cpu, HardDrive, Zap, X, Terminal, Flame } from 'lucide-react';
+import { Cpu, HardDrive, Zap, X, Flame } from 'lucide-react';
 
 export default function SystemDiagnosticPanel({ isOpen, onClose }) {
   const [cpuUsage, setCpuUsage] = useState(42);
   const [ramUsage, setRamUsage] = useState(68);
   const [beamVoltage, setBeamVoltage] = useState(15.4);
-  const [isGlitching, setIsGlitching] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -21,27 +20,13 @@ export default function SystemDiagnosticPanel({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
-  const triggerGlitchEffect = () => {
-    setIsGlitching(true);
-
-    // Apply glitch effect class to body and main container
-    document.body.classList.add('crt-glitch-active');
-
-    setTimeout(() => {
-      document.body.classList.remove('crt-glitch-active');
-      setIsGlitching(false);
-    }, 1200);
-  };
-
   return (
     <div 
       style={{
         position: 'fixed',
         inset: 0,
         zIndex: 200,
-        background: isGlitching 
-          ? 'rgba(255, 0, 0, 0.25)' 
-          : 'rgba(7, 5, 0, 0.85)',
+        background: 'rgba(7, 5, 0, 0.85)',
         backdropFilter: 'blur(16px)',
         display: 'flex',
         alignItems: 'center',
@@ -51,15 +36,13 @@ export default function SystemDiagnosticPanel({ isOpen, onClose }) {
       }}
     >
       <div 
-        className={`terminal-card ${isGlitching ? 'crt-glitch-active' : ''}`}
+        className="terminal-card"
         style={{
           width: '100%',
           maxWidth: '680px',
           background: 'rgba(18, 13, 2, 0.95)',
           border: '1px solid var(--border-amber)',
-          boxShadow: isGlitching 
-            ? '0 0 80px rgba(255, 0, 0, 0.8)' 
-            : '0 0 50px var(--amber-glow)',
+          boxShadow: '0 0 50px var(--amber-glow)',
           padding: '28px'
         }}
       >
@@ -128,21 +111,7 @@ export default function SystemDiagnosticPanel({ isOpen, onClose }) {
         </div>
 
         {/* Action Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-          <button
-            onClick={triggerGlitchEffect}
-            className="terminal-link"
-            style={{ 
-              padding: '8px 16px', 
-              fontSize: '0.85rem',
-              background: isGlitching ? '#ff0055' : undefined,
-              color: isGlitching ? '#ffffff' : undefined
-            }}
-          >
-            <Terminal size={15} />
-            <span>{isGlitching ? 'EXECUTANDO RUÍDO...' : 'Simular Ruído CRT (Glitch Test)'}</span>
-          </button>
-
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
           <div style={{ fontSize: '0.75rem', color: 'var(--amber-dim)' }}>
             STATUS DO SISTEMA: OPERACIONAL (OS v2.6)
           </div>
