@@ -167,5 +167,20 @@ input::placeholder {
   color: #0d0a00;
   text-shadow: none;
   box-shadow: 0 0 25px var(--amber-glow);
-  transform: translateX(6px);
+  transform: none;
+}
+
+.terminal-link:active {
+  transform: scale(0.96);
+}
+
+/* Equalizer Bars Wave Animation */
+@keyframes eqBarBounce {
+  0% { height: 3px; }
+  50% { height: 12px; }
+  100% { height: 4px; }
+}
+
+.eq-bar-playing {
+  animation: eqBarBounce 0.45s ease-in-out infinite alternate;
 }

@@ -13,8 +13,8 @@ const TRACKS = [
     youtubeId: "X0ArmTeJN84"
   },
   {
-    title: "dazegxd — cyberpunk electronic",
-    artist: "dazegxd",
+    title: "rusino — looping the rooms",
+    artist: "rusino",
     youtubeId: "icBDYkfxpMs"
   }
 ];
@@ -32,7 +32,7 @@ export default function CyberpunkRadio({ globalMute = false }) {
   const [pos, setPos] = useState({ x: window.innerWidth - 320, y: window.innerHeight - 200 });
   const [isDragging, setIsDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
-  
+
   const velRef = useRef({ x: 0, y: 0 });
   const prevMousePos = useRef({ x: 0, y: 0 });
   const posRef = useRef(pos);
@@ -165,7 +165,7 @@ export default function CyberpunkRadio({ globalMute = false }) {
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (!isDragging) return;
-      
+
       const newVx = (e.clientX - prevMousePos.current.x) * 1.8;
       const newVy = (e.clientY - prevMousePos.current.y) * 1.8;
       velRef.current = { x: newVx, y: newVy };
@@ -224,7 +224,7 @@ export default function CyberpunkRadio({ globalMute = false }) {
   const currentTrack = TRACKS[currentTrackIndex];
 
   return (
-    <div 
+    <div
       onMouseDown={handleMouseDown}
       style={{
         position: 'fixed',
@@ -238,8 +238,8 @@ export default function CyberpunkRadio({ globalMute = false }) {
         border: '1px solid var(--border-amber)',
         borderRadius: '8px',
         padding: '12px 16px',
-        boxShadow: isDragging 
-          ? '0 15px 45px var(--amber-glow), 0 0 30px var(--amber-soft-glow)' 
+        boxShadow: isDragging
+          ? '0 15px 45px var(--amber-glow), 0 0 30px var(--amber-soft-glow)'
           : '0 10px 35px rgba(0, 0, 0, 0.85), 0 0 25px var(--amber-soft-glow)',
         userSelect: 'none',
         transition: isDragging ? 'none' : 'box-shadow 0.2s ease'
@@ -251,11 +251,11 @@ export default function CyberpunkRadio({ globalMute = false }) {
       </div>
 
       {/* Header Bar */}
-      <div 
-        style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'space-between', 
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
           marginBottom: isMinimized ? '0' : '10px',
           cursor: isDragging ? 'grabbing' : 'grab'
         }}
@@ -269,14 +269,16 @@ export default function CyberpunkRadio({ globalMute = false }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {/* Animated Equalizer Wave Bars */}
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: '2.5px', height: '12px' }}>
-            {[1, 2, 3, 4].map((bar) => (
-              <div 
-                key={bar}
+            {[0, 1, 2, 3].map((idx) => (
+              <div
+                key={idx}
+                className={isPlaying && !effectiveMute ? 'eq-bar-playing' : ''}
                 style={{
                   width: '3px',
-                  height: isPlaying && !effectiveMute ? `${Math.sin(bar * 1.5 + Date.now() * 0.008) * 5 + 7}px` : '3px',
+                  height: isPlaying && !effectiveMute ? '12px' : '3px',
                   backgroundColor: 'var(--amber-primary)',
-                  transition: 'height 0.15s ease'
+                  animationDelay: `${idx * 0.12}s`,
+                  transition: 'height 0.2s ease'
                 }}
               />
             ))}
@@ -310,9 +312,9 @@ export default function CyberpunkRadio({ globalMute = false }) {
             </div>
             <div style={{ color: 'var(--amber-dim)', fontSize: '0.72rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <span>{currentTrack.artist}</span>
-              <a 
-                href={`https://www.youtube.com/watch?v=${currentTrack.youtubeId}`} 
-                target="_blank" 
+              <a
+                href={`https://www.youtube.com/watch?v=${currentTrack.youtubeId}`}
+                target="_blank"
                 rel="noreferrer"
                 style={{ color: 'var(--amber-primary)', textDecoration: 'underline', opacity: 0.8 }}
               >
@@ -353,13 +355,13 @@ export default function CyberpunkRadio({ globalMute = false }) {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <button 
-                onClick={() => setLocalMute(!localMute)} 
+              <button
+                onClick={() => setLocalMute(!localMute)}
                 style={{ background: 'none', border: 'none', color: 'var(--amber-primary)', cursor: 'pointer', padding: '2px' }}
               >
                 {effectiveMute || volume === 0 ? <VolumeX size={14} /> : <Volume2 size={14} />}
               </button>
-              
+
               <input
                 type="range"
                 min="0"
