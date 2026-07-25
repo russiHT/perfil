@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, RotateCcw, X, Play, Flag, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { Trophy, RotateCcw, X, Play, Flag, ShieldAlert, CheckCircle2, Bot } from 'lucide-react';
 
 const BOARD_SIZE = 9;
 const MINES_COUNT = 10;
@@ -11,7 +11,7 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
   const [flagsLeft, setFlagsLeft] = useState(MINES_COUNT);
   const [timer, setTimer] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [flagMode, setFlagMode] = useState(false);
+  const [isAutopilot, setIsAutopilot] = useState(false);
   const [bestTime, setBestTime] = useState(() => {
     return parseInt(localStorage.getItem('crt_mines_best_time') || '0', 10);
   });
@@ -98,10 +98,10 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
     return () => clearInterval(interval);
   }, [isOpen, isPlaying, isGameOver, isWon]);
 
-  const revealCell = (r, c) => {
-    if (isGameOver || isWon || board[r][c].isRevealed || board[r][c].isFlagged) return;
+  const revealCell = (r, c, currentBoard = board) => {
+    if (isGameOver || isWon || currentBoard[r][c].isRevealed || currentBoard[r][c].isFlagged) return currentBoard;
 
-    let newBoard = board.map(row => row.map(cell => ({ ...cell })));
+    let newBoard = currentBoard.map(row => row.map(cell => ({ ...cell })));
 
     if (newBoard[r][c].isMine) {
       // Game Over - reveal all mines
@@ -114,7 +114,7 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
       setIsGameOver(true);
       setIsPlaying(false);
       playSound(150, 'sawtooth', 0.4);
-      return;
+      return newBoard;
     }
 
     // Flood fill reveal
@@ -155,13 +155,15 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
         localStorage.setItem('crt_mines_best_time', timer.toString());
       }
     }
+
+    return newBoard;
   };
 
-  const toggleFlag = (e, r, c) => {
+  const toggleFlag = (e, r, c, currentBoard = board) => {
     if (e) e.preventDefault();
-    if (isGameOver || isWon || board[r][c].isRevealed) return;
+    if (isGameOver || isWon || currentBoard[r][c].isRevealed) return currentBoard;
 
-    let newBoard = board.map(row => row.map(cell => ({ ...cell })));
+    let newBoard = currentBoard.map(row => row.map(cell => ({ ...cell })));
     const cell = newBoard[r][c];
 
     if (!cell.isFlagged && flagsLeft > 0) {
@@ -175,15 +177,90 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
     }
 
     setBoard(newBoard);
+    return newBoard;
   };
 
-  const handleCellClick = (r, c) => {
-    if (flagMode) {
-      toggleFlag(null, r, c);
-    } else {
-      revealCell(r, c);
-    }
-  };
+  // Autopilot Solver Bot Logic Loop
+  useEffect(() => {
+    if (!isOpen || !isPlaying || isGameOver || isWon || !isAutopilot || board.length === 0) return;
+
+    const botInterval = setInterval(() => {
+      // 1. If board is completely unrevealed, reveal center cell
+      const hasAnyRevealed = board.some(row => row.some(cell => cell.isRevealed));
+      if (!hasAnyRevealed) {
+        revealCell(4, 4);
+        return;
+      }
+
+      let actionTaken = false;
+      let newBoard = board.map(row => row.map(cell => ({ ...cell })));
+
+      const getNeighbors = (r, c) => {
+        const neighbors = [];
+        for (let dr = -1; dr <= 1; dr++) {
+          for (let dc = -1; dc <= 1; dc++) {
+            if (dr === 0 && dc === 0) continue;
+            const nr = r + dr;
+            const nc = c + dc;
+            if (nr >= 0 && nr < BOARD_SIZE && nc >= 0 && nc < BOARD_SIZE) {
+              neighbors.push(newBoard[nr][nc]);
+            }
+          }
+        }
+        return neighbors;
+      };
+
+      // 2. Guaranteed deductions
+      for (let r = 0; r < BOARD_SIZE; r++) {
+        for (let c = 0; c < BOARD_SIZE; c++) {
+          const cell = newBoard[r][c];
+          if (!cell.isRevealed || cell.neighborMines === 0) continue;
+
+          const neighbors = getNeighbors(r, c);
+          const hidden = neighbors.filter(n => !n.isRevealed && !n.isFlagged);
+          const flagged = neighbors.filter(n => n.isFlagged);
+
+          // All remaining hidden neighbors are mines
+          if (hidden.length > 0 && hidden.length + flagged.length === cell.neighborMines) {
+            hidden.forEach(n => {
+              toggleFlag(null, n.r, n.c, newBoard);
+            });
+            actionTaken = true;
+            break;
+          }
+
+          // All mines are flagged, remaining hidden neighbors are safe
+          if (flagged.length === cell.neighborMines && hidden.length > 0) {
+            hidden.forEach(n => {
+              revealCell(n.r, n.c, newBoard);
+            });
+            actionTaken = true;
+            break;
+          }
+        }
+        if (actionTaken) break;
+      }
+
+      // 3. Fallback guess if no deterministic move found
+      if (!actionTaken) {
+        const candidates = [];
+        for (let r = 0; r < BOARD_SIZE; r++) {
+          for (let c = 0; c < BOARD_SIZE; c++) {
+            if (!newBoard[r][c].isRevealed && !newBoard[r][c].isFlagged) {
+              candidates.push(newBoard[r][c]);
+            }
+          }
+        }
+
+        if (candidates.length > 0) {
+          const randomPick = candidates[Math.floor(Math.random() * candidates.length)];
+          revealCell(randomPick.r, randomPick.c);
+        }
+      }
+    }, 280);
+
+    return () => clearInterval(botInterval);
+  }, [isOpen, isPlaying, isGameOver, isWon, isAutopilot, board]);
 
   if (!isOpen) return null;
 
@@ -225,7 +302,7 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
           </button>
         </div>
 
-        {/* Stats & Controls Bar */}
+        {/* Stats & Autopilot Toggle Bar */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', fontSize: '0.85rem', fontWeight: '700', flexWrap: 'wrap', gap: '8px' }}>
           <div style={{ color: 'var(--amber-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Flag size={14} />
@@ -238,18 +315,19 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
           </div>
 
           <button
-            onClick={() => setFlagMode(!flagMode)}
+            onClick={() => setIsAutopilot(!isAutopilot)}
             className="terminal-link"
             style={{
               padding: '4px 10px',
               fontSize: '0.75rem',
-              background: flagMode ? 'var(--amber-primary)' : 'var(--amber-soft-glow)',
-              color: flagMode ? '#070500' : 'var(--amber-primary)',
+              background: isAutopilot ? 'var(--amber-primary)' : 'var(--amber-soft-glow)',
+              color: isAutopilot ? '#070500' : 'var(--amber-primary)',
               fontWeight: '800'
             }}
+            title="Ativar/Desativar Bot Autopiloto para resolver o Campo Minado sozinho"
           >
-            <Flag size={13} />
-            <span>{flagMode ? 'MODO BANDEIRA: ON' : 'MODO BANDEIRA: OFF'}</span>
+            <Bot size={13} />
+            <span>{isAutopilot ? 'AUTOPILOT: ON' : 'AUTOPILOT: OFF'}</span>
           </button>
         </div>
 
@@ -292,7 +370,7 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
               return (
                 <button
                   key={`${r}-${c}`}
-                  onClick={() => handleCellClick(r, c)}
+                  onClick={() => revealCell(r, c)}
                   onContextMenu={(e) => toggleFlag(e, r, c)}
                   style={{
                     aspectRatio: '1/1',
@@ -318,7 +396,7 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
           )}
         </div>
 
-        {/* Footer Status & Reset */}
+        {/* Footer Status & Controls Notice */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
           {isWon ? (
             <div style={{ color: 'var(--amber-bright)', fontWeight: '800', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -329,9 +407,16 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
             <div style={{ color: 'var(--amber-bright)', fontWeight: '800', fontSize: '0.9rem' }}>
               BOOM! GAME OVER
             </div>
+          ) : isAutopilot ? (
+            <div style={{ fontSize: '0.78rem', color: 'var(--amber-bright)', fontWeight: '700' }} className="crt-flicker">
+              <div>&gt; BOT AUTOPILOTO RESOLVENDO CAMPO MINADO...</div>
+              <div style={{ color: 'var(--amber-dim)', fontSize: '0.74rem', marginTop: '2px' }}>
+                o bot de campo minado tambem e meio burro :(
+              </div>
+            </div>
           ) : (
-            <div style={{ fontSize: '0.78rem', color: 'var(--amber-dim)' }}>
-              &gt; Clique para revelar ou use o modo bandeira [F].
+            <div style={{ fontSize: '0.76rem', color: 'var(--amber-dim)' }}>
+              &gt; Botão esquerdo para revelar // Botão direito para colocar bandeira [F]
             </div>
           )}
 
