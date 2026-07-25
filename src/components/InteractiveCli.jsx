@@ -136,7 +136,7 @@ export default function InteractiveCli({ onOpenDiag }) {
         newHistory.push({
           type: 'sys',
           text: `Comandos disponíveis:
-- drive / nightdrive   : Alternar modo de direção noturna 3D (Highway Grid)
+- garage / cars        : Painel de telemetria da garagem automotiva
 - passgen <tamanho>     : Gerar senha criptográfica forte e copiar para o clipboard
 - typing / wpm          : Teste de velocidade de digitação de código em WPM
 - minesweeper / mines   : Mini-game retrô Campo Minado CRT
@@ -156,6 +156,15 @@ export default function InteractiveCli({ onOpenDiag }) {
 - github                : Abrir repositório GitHub (russiHT)
 - contact               : Formas de contato
 - clear                 : Limpar tela`
+        });
+        break;
+
+      case 'garage':
+      case 'cars':
+      case 'carros':
+        newHistory.push({
+          type: 'sys',
+          text: `> [OBD-II TELEMETRY]: Conectando à ECU da garagem...\n> Exibindo: Nissan Skyline GT-R R34, Porsche 911 GT3 RS, Mazda RX-7 Spirit R.`
         });
         break;
 
@@ -182,12 +191,6 @@ export default function InteractiveCli({ onOpenDiag }) {
         }
         break;
       }
-
-      case 'drive':
-      case 'nightdrive':
-        window.dispatchEvent(new CustomEvent('toggle-night-drive'));
-        newHistory.push({ type: 'sys', text: '> [NIGHT DRIVE ENGINE]: Alternando modo Piloto Noturno / Highway Grid...' });
-        break;
 
       case 'typing':
       case 'wpm':
