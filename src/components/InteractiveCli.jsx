@@ -10,7 +10,6 @@ const PHILOSOPHY_QUOTES = [
   { text: "Quem vence a si mesmo é o guerreiro mais poderoso.", author: "Lao Tsé" }
 ];
 
-// Morse Code Dictionary
 const MORSE_MAP = {
   'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.',
   'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..',
@@ -137,25 +136,25 @@ export default function InteractiveCli({ onOpenDiag }) {
         newHistory.push({
           type: 'sys',
           text: `Comandos disponíveis:
-- about                 : Resumo sobre Russi
-- skills                : Habilidades & Tecnologias
-- projects              : Projetos recentes em destaque
-- snake / game          : Jogar mini-game retrô Cyber-Snake CRT
-- morse <texto>         : Codificar texto para Código Morse (com áudio bip CRT)
-- unmorse <código>      : Decodificar Código Morse para texto
-- b64encode <texto>     : Codificar texto para Base64
-- b64decode <hash>      : Decodificar Base64 para texto
-- json <string>         : Validar e formatar string JSON
-- diag                  : Painel de diagnóstico do hardware CRT
-- reset                 : Restaura as bolinhas para a esfera inicial
-- matrix                : Iniciar chuva de código Matrix
-- quote                 : Citação filosófica
-- uptime                : Status do sistema e tempo de atividade
-- theme                 : Alternar tema de cores (OS Standard / Cyan / Emerald)
-- secret                : Arquivos confidenciais
-- github                : Abrir repositório GitHub (russiHT)
-- contact               : Formas de contato
-- clear                 : Limpar tela`
+- about             : Resumo sobre Russi
+- skills            : Habilidades & Tecnologias
+- projects          : Projetos recentes em destaque
+- snake / game   : Jogar mini-game retrô Cyber-Snake CRT
+- morse <texto>     : Codificar texto para Código Morse (com áudio bip CRT)
+- unmorse <código>  : Decodificar Código Morse para texto
+- b64encode <texto> : Codificar texto para Base64
+- b64decode <hash>  : Decodificar Base64 para texto
+- json <string>     : Validar e formatar string JSON
+- diag              : Painel de diagnóstico do hardware CRT
+- reset             : Restaura as bolinhas para a esfera inicial
+- matrix            : Iniciar chuva de código Matrix
+- quote             : Citação filosófica
+- uptime            : Status do sistema e tempo de atividade
+- theme             : Alternar tema de cores (OS Standard / Cyan / Emerald)
+- secret            : Arquivos confidenciais
+- github            : Abrir repositório GitHub (russiHT)
+- contact           : Formas de contato
+- clear             : Limpar tela`
         });
         break;
 
@@ -451,7 +450,7 @@ drwx------ 2 russi russi 4096 /vault/emotion_engine.dat
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Digite 'help'..."
+          placeholder="Digite 'help', 'morse SOS', 'json'... "
           style={{
             flex: 1,
             background: 'transparent',

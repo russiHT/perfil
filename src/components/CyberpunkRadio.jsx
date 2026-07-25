@@ -11,6 +11,11 @@ const TRACKS = [
     title: "dazegxd — breakbeat / liquid dnb",
     artist: "dazegxd",
     youtubeId: "X0ArmTeJN84"
+  },
+  {
+    title: "dazegxd — cyberpunk electronic",
+    artist: "dazegxd",
+    youtubeId: "icBDYkfxpMs"
   }
 ];
 
