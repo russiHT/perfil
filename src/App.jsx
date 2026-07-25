@@ -139,19 +139,19 @@ export default function App() {
           {/* Hero Section (# russi_) */}
           <HeroSection />
 
-          {/* About Section (olá, aqui é o russi.) */}
-          <AboutSection />
-
-          {/* Projects / Registros Section */}
-          <ProjectsSection />
-
-          {/* GitHub Live API Stats Card */}
-          <GithubStatsCard />
-
-          {/* Interactive CLI Prompt */}
+          {/* 1. Interactive CLI Prompt (Terminal antes de tudo) */}
           <InteractiveCli onOpenDiag={() => setIsDiagOpen(true)} />
 
-          {/* Contact / Canal Aberto Section */}
+          {/* 2. GitHub Live API Stats Card (Depois a API do GitHub) */}
+          <GithubStatsCard />
+
+          {/* 3. About Section (olá, aqui é o russi.) */}
+          <AboutSection />
+
+          {/* 4. Projects / Registros Section */}
+          <ProjectsSection />
+
+          {/* 5. Contact / Canal Aberto Section */}
           <ContactSection />
 
           {/* Terminal Footer with Hide Text Toggle */}
