@@ -8,6 +8,7 @@ import HeroSection from './components/HeroSection';
 import AboutSection from './components/AboutSection';
 import CyberpunkRadio from './components/CyberpunkRadio';
 import ProjectsSection from './components/ProjectsSection';
+import GithubStatsCard from './components/GithubStatsCard';
 import InteractiveCli from './components/InteractiveCli';
 import ContactSection from './components/ContactSection';
 import TerminalFooter from './components/TerminalFooter';
@@ -132,6 +133,9 @@ export default function App() {
 
           {/* Projects / Registros Section */}
           <ProjectsSection />
+
+          {/* GitHub Live API Stats Card */}
+          <GithubStatsCard />
 
           {/* Interactive CLI Prompt */}
           <InteractiveCli onOpenDiag={() => setIsDiagOpen(true)} />

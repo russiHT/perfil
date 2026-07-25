@@ -10,6 +10,66 @@ const PHILOSOPHY_QUOTES = [
   { text: "Quem vence a si mesmo é o guerreiro mais poderoso.", author: "Lao Tsé" }
 ];
 
+// Morse Code Dictionary
+const MORSE_MAP = {
+  'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.',
+  'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..',
+  'M': '--', 'N': '-.', 'O': '---', 'P': '.--.', 'Q': '--.-', 'R': '.-.',
+  'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
+  'Y': '-.--', 'Z': '--..', '0': '-----', '1': '.----', '2': '..---',
+  '3': '...--', '4': '....-', '5': '.....', '6': '-....', '7': '--...',
+  '8': '---..', '9': '----.', ' ': '/'
+};
+
+const REVERSE_MORSE_MAP = Object.fromEntries(
+  Object.entries(MORSE_MAP).map(([k, v]) => [v, k])
+);
+
+const encodeToMorse = (str) => {
+  return str.toUpperCase().split('').map(char => MORSE_MAP[char] || char).join(' ');
+};
+
+const decodeFromMorse = (morseStr) => {
+  return morseStr.split(' ').map(symbol => REVERSE_MORSE_MAP[symbol] || symbol).join('');
+};
+
+const playMorseBeeps = (morseString) => {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let startTime = audioCtx.currentTime + 0.05;
+    const unit = 0.05; // 50ms unit
+
+    // Play first 60 symbols max
+    const symbols = morseString.slice(0, 60).split('');
+
+    symbols.forEach(char => {
+      if (char === '.' || char === '-') {
+        const duration = char === '.' ? unit : unit * 3;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(700, startTime);
+
+        gain.gain.setValueAtTime(0.04, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(startTime);
+        osc.stop(startTime + duration);
+
+        startTime += duration + unit;
+      } else if (char === ' ') {
+        startTime += unit * 2;
+      } else if (char === '/') {
+        startTime += unit * 4;
+      }
+    });
+  } catch (e) {
+    // Audio Context fallback
+  }
+};
+
 export default function InteractiveCli({ onOpenDiag }) {
   const [history, setHistory] = useState([
     { type: 'sys', text: 'Terminal interativo v2.6. Digite "help" para ver os comandos disponíveis.' }
@@ -63,30 +123,104 @@ export default function InteractiveCli({ onOpenDiag }) {
 
   const handleCommand = (e) => {
     e.preventDefault();
-    const cmd = input.trim().toLowerCase();
-    if (!cmd) return;
+    const rawInput = input.trim();
+    if (!rawInput) return;
 
-    const newHistory = [...history, { type: 'user', text: `russi@terminal:~$ ${cmd}` }];
+    const parts = rawInput.split(' ');
+    const cmd = parts[0].toLowerCase();
+    const args = parts.slice(1).join(' ');
+
+    const newHistory = [...history, { type: 'user', text: `russi@terminal:~$ ${rawInput}` }];
 
     switch (cmd) {
       case 'help':
         newHistory.push({
           type: 'sys',
           text: `Comandos disponíveis:
-- about    : Resumo sobre Russi
-- skills   : Lista de tecnologias & habilidades
-- projects : Projetos recentes em destaque
-- diag     : Painel de diagnóstico do hardware CRT
-- reset    : Restaura as bolinhas para a esfera inicial
-- matrix   : Iniciar Matrix
-- quote    : Citação filosófica
-- uptime   : Status do sistema e tempo de atividade
-- theme    : Alternar tema de cores completo (OS Standard / Cyan / Emerald)
-- secret   : Arquivos confidenciais
-- github   : Abrir repositório GitHub (russiHT)
-- contact  : Formas de contato
-- clear    : Limpar tela`
+- about             : Resumo sobre Russi
+- skills            : Habilidades & Tecnologias
+- projects          : Projetos recentes em destaque
+- morse <texto>     : Codificar texto para Código Morse (com áudio bip CRT)
+- unmorse <código>  : Decodificar Código Morse para texto
+- b64encode <texto> : Codificar texto para Base64
+- b64decode <hash>  : Decodificar Base64 para texto
+- json <string>     : Validar e formatar string JSON
+- diag              : Painel de diagnóstico do hardware CRT
+- reset             : Restaura as bolinhas para a esfera inicial
+- matrix            : Iniciar chuva de código Matrix
+- quote             : Citação filosófica
+- uptime            : Status do sistema e tempo de atividade
+- theme             : Alternar tema de cores (OS Standard / Cyan / Emerald)
+- secret            : Arquivos confidenciais
+- github            : Abrir repositório GitHub (russiHT)
+- contact           : Formas de contato
+- clear             : Limpar tela`
         });
+        break;
+
+      case 'morse':
+        if (!args) {
+          newHistory.push({ type: 'sys', text: '> Uso: morse <texto_para_codificar> (ex: morse SOS)' });
+        } else {
+          const morseResult = encodeToMorse(args);
+          playMorseBeeps(morseResult);
+          newHistory.push({
+            type: 'sys',
+            text: `> [MORSE ENCODER]: "${args}" ➔ ${morseResult}\n> [AUDIO]: Transmitindo frequências de bip CRT (700Hz)...`
+          });
+        }
+        break;
+
+      case 'unmorse':
+        if (!args) {
+          newHistory.push({ type: 'sys', text: '> Uso: unmorse <codigo_morse> (ex: unmorse ... --- ...)' });
+        } else {
+          const decodedResult = decodeFromMorse(args);
+          newHistory.push({
+            type: 'sys',
+            text: `> [MORSE DECODER]: ${args} ➔ "${decodedResult}"`
+          });
+        }
+        break;
+
+      case 'b64encode':
+        if (!args) {
+          newHistory.push({ type: 'sys', text: '> Uso: b64encode <texto> (ex: b64encode hello)' });
+        } else {
+          try {
+            const b64 = btoa(args);
+            newHistory.push({ type: 'sys', text: `> [BASE64 ENCODE]: "${args}" ➔ ${b64}` });
+          } catch (err) {
+            newHistory.push({ type: 'sys', text: '> [ERRO]: Texto inválido para codificação Base64.' });
+          }
+        }
+        break;
+
+      case 'b64decode':
+        if (!args) {
+          newHistory.push({ type: 'sys', text: '> Uso: b64decode <hash_base64> (ex: b64decode aGVsbG8=)' });
+        } else {
+          try {
+            const decoded = atob(args);
+            newHistory.push({ type: 'sys', text: `> [BASE64 DECODE]: ${args} ➔ "${decoded}"` });
+          } catch (err) {
+            newHistory.push({ type: 'sys', text: '> [ERRO]: Hash Base64 inválido.' });
+          }
+        }
+        break;
+
+      case 'json':
+        if (!args) {
+          newHistory.push({ type: 'sys', text: '> Uso: json <string_json> (ex: json {"status":"ok"})' });
+        } else {
+          try {
+            const parsed = JSON.parse(args);
+            const formatted = JSON.stringify(parsed, null, 2);
+            newHistory.push({ type: 'sys', text: `> [JSON FORMATTER & VALIDATOR]: OK!\n${formatted}` });
+          } catch (err) {
+            newHistory.push({ type: 'sys', text: `> [ERRO JSON]: String JSON inválida — ${err.message}` });
+          }
+        }
         break;
 
       case 'diag':
@@ -132,7 +266,7 @@ export default function InteractiveCli({ onOpenDiag }) {
           text: `> [SYS STATUS]:
 • Uptime           : 24/7 ONLINE
 • Latência         : 0.4ms (Local Engine)
-• Alocação de Memória: 64MB
+• Alocação Memória : 64MB
 • Estado da Esfera : Ativa & Calibrada`
         });
         break;
@@ -142,7 +276,7 @@ export default function InteractiveCli({ onOpenDiag }) {
           type: 'sys',
           text: `> [CYBERDECK SECRET DIRECTORY]:
 drwx------ 2 russi russi 4096 /vault/emotion_engine.dat
--rw-r--r-- 1 russi russi 1024 /vault/blade_runner_logs.txt
+-rw-r--r-- 1 russi russi 1024 /vault/morse_frequencies.wav
 -rw-r--r-- 1 russi russi 2048 /vault/3d_sphere_matrix.cpp
 > Status: ACESSO AUTORIZADO. Nível de segurança: RUSSI_LEVEL_9.`
         });
@@ -190,7 +324,7 @@ drwx------ 2 russi russi 4096 /vault/emotion_engine.dat
         break;
 
       case 'matrix':
-        newHistory.push({ type: 'sys', text: '> [SYS]: Inicializando protocolo...' });
+        newHistory.push({ type: 'sys', text: '> [SYS]: Inicializando protocolo Matrix...' });
         setIsMatrixActive(true);
         break;
 
@@ -297,7 +431,7 @@ drwx------ 2 russi russi 4096 /vault/emotion_engine.dat
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Digite 'help'..."
+          placeholder="Digite 'help', 'morse SOS', 'json'... "
           style={{
             flex: 1,
             background: 'transparent',
