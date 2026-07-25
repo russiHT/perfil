@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Terminal as TermIcon, Send, Maximize2, Minimize2, Gamepad2 } from 'lucide-react';
+import { Terminal as TermIcon, Send, Maximize2, Minimize2, Gamepad2, Keyboard, ShieldAlert, Key } from 'lucide-react';
 
 const PHILOSOPHY_QUOTES = [
   { text: "A vida não examinada não vale a pena ser vivida.", author: "Sócrates" },
@@ -136,26 +136,63 @@ export default function InteractiveCli({ onOpenDiag }) {
         newHistory.push({
           type: 'sys',
           text: `Comandos disponíveis:
-- about             : Resumo sobre Russi
-- skills            : Habilidades & Tecnologias
-- projects          : Projetos recentes em destaque
-- snake / game   : Jogar mini-game retrô Cyber-Snake CRT
-- morse <texto>     : Codificar texto para Código Morse (com áudio bip CRT)
-- unmorse <código>  : Decodificar Código Morse para texto
-- b64encode <texto> : Codificar texto para Base64
-- b64decode <hash>  : Decodificar Base64 para texto
-- json <string>     : Validar e formatar string JSON
-- diag              : Painel de diagnóstico do hardware CRT
-- reset             : Restaura as bolinhas para a esfera inicial
-- matrix            : Iniciar chuva de código Matrix
-- quote             : Citação filosófica
-- uptime            : Status do sistema e tempo de atividade
-- theme             : Alternar tema de cores (OS Standard / Cyan / Emerald)
-- secret            : Arquivos confidenciais
-- github            : Abrir repositório GitHub (russiHT)
-- contact           : Formas de contato
-- clear             : Limpar tela`
+- passgen <tamanho>     : Gerar senha criptográfica forte e copiar para o clipboard
+- typing / wpm          : Teste de velocidade de digitação de código em WPM
+- minesweeper / mines   : Mini-game retrô Campo Minado CRT
+- snake / game          : Jogar mini-game retrô Cyber-Snake CRT
+- morse <texto>         : Codificar texto para Código Morse (com áudio bip CRT)
+- unmorse <código>      : Decodificar Código Morse para texto
+- b64encode <texto>     : Codificar texto para Base64
+- b64decode <hash>      : Decodificar Base64 para texto
+- json <string>         : Validar e formatar string JSON
+- diag                  : Painel de diagnóstico do hardware CRT
+- reset                 : Restaura as bolinhas para a esfera inicial
+- matrix                : Iniciar chuva de código Matrix
+- quote                 : Citação filosófica
+- uptime                : Status do sistema e tempo de atividade
+- theme                 : Alternar tema de cores (OS Standard / Cyan / Emerald)
+- secret                : Arquivos confidenciais
+- github                : Abrir repositório GitHub (russiHT)
+- contact               : Formas de contato
+- clear                 : Limpar tela`
         });
+        break;
+
+      case 'passgen': {
+        const len = Math.min(64, Math.max(8, parseInt(args, 10) || 16));
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=';
+        const array = new Uint32Array(len);
+        window.crypto.getRandomValues(array);
+        let pass = '';
+        for (let i = 0; i < len; i++) {
+          pass += chars[array[i] % chars.length];
+        }
+        try {
+          navigator.clipboard.writeText(pass);
+          newHistory.push({
+            type: 'sys',
+            text: `> [PASSGEN]: Senha gerada (${len} caracteres): ${pass}\n> [CLIPBOARD]: Copiado automaticamente para o clipboard!`
+          });
+        } catch (err) {
+          newHistory.push({
+            type: 'sys',
+            text: `> [PASSGEN]: Senha gerada (${len} caracteres): ${pass}`
+          });
+        }
+        break;
+      }
+
+      case 'typing':
+      case 'wpm':
+        window.dispatchEvent(new CustomEvent('open-typing-game'));
+        newHistory.push({ type: 'sys', text: '> [DEV ENGINE]: Inicializando Teste de Digitação WPM...' });
+        break;
+
+      case 'minesweeper':
+      case 'mines':
+      case 'campo-minado':
+        window.dispatchEvent(new CustomEvent('open-minesweeper-game'));
+        newHistory.push({ type: 'sys', text: '> [GAME ENGINE]: Inicializando Campo Minado CRT v2.1...' });
         break;
 
       case 'snake':
@@ -394,10 +431,30 @@ drwx------ 2 russi russi 4096 /vault/emotion_engine.dat
             onClick={() => window.dispatchEvent(new CustomEvent('open-snake-game'))}
             className="terminal-link"
             style={{ padding: '4px 10px', fontSize: '0.75rem', background: 'var(--amber-soft-glow)' }}
-            title="Jogar Mini-Game Retrô"
+            title="Jogar Mini-Game Cyber-Snake"
           >
             <Gamepad2 size={13} />
-            <span>JOGAR SNAKE</span>
+            <span>SNAKE</span>
+          </button>
+
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('open-minesweeper-game'))}
+            className="terminal-link"
+            style={{ padding: '4px 10px', fontSize: '0.75rem', background: 'var(--amber-soft-glow)' }}
+            title="Jogar Campo Minado CRT"
+          >
+            <ShieldAlert size={13} />
+            <span>CAMPO MINADO</span>
+          </button>
+
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('open-typing-game'))}
+            className="terminal-link"
+            style={{ padding: '4px 10px', fontSize: '0.75rem', background: 'var(--amber-soft-glow)' }}
+            title="Teste de Velocidade de Digitação WPM"
+          >
+            <Keyboard size={13} />
+            <span>DIGITAÇÃO WPM</span>
           </button>
 
           <button

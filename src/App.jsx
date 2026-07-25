@@ -14,6 +14,8 @@ import ContactSection from './components/ContactSection';
 import TerminalFooter from './components/TerminalFooter';
 import SystemDiagnosticPanel from './components/SystemDiagnosticPanel';
 import RetroSnakeGameModal from './components/RetroSnakeGameModal';
+import DevTypingSpeedModal from './components/DevTypingSpeedModal';
+import RetroMinesweeperModal from './components/RetroMinesweeperModal';
 import { RotateCcw, Eye } from 'lucide-react';
 
 export default function App() {
@@ -22,6 +24,8 @@ export default function App() {
   const [isZenMode, setIsZenMode] = useState(false);
   const [isDiagOpen, setIsDiagOpen] = useState(false);
   const [isGameOpen, setIsGameOpen] = useState(false);
+  const [isTypingOpen, setIsTypingOpen] = useState(false);
+  const [isMinesOpen, setIsMinesOpen] = useState(false);
 
   const playClickSound = () => {
     if (isMuted) return;
@@ -50,8 +54,18 @@ export default function App() {
 
   useEffect(() => {
     const handleOpenGame = () => setIsGameOpen(true);
+    const handleOpenTyping = () => setIsTypingOpen(true);
+    const handleOpenMines = () => setIsMinesOpen(true);
+
     window.addEventListener('open-snake-game', handleOpenGame);
-    return () => window.removeEventListener('open-snake-game', handleOpenGame);
+    window.addEventListener('open-typing-game', handleOpenTyping);
+    window.addEventListener('open-minesweeper-game', handleOpenMines);
+
+    return () => {
+      window.removeEventListener('open-snake-game', handleOpenGame);
+      window.removeEventListener('open-typing-game', handleOpenTyping);
+      window.removeEventListener('open-minesweeper-game', handleOpenMines);
+    };
   }, []);
 
   const triggerResetSphere = () => {
@@ -71,11 +85,11 @@ export default function App() {
       {/* CRT Scanlines & Screen Vignette */}
       <CrtOverlay />
 
-      {/* Interactive System Hardware Diagnostic Panel */}
+      {/* Modals & Overlays */}
       <SystemDiagnosticPanel isOpen={isDiagOpen} onClose={() => setIsDiagOpen(false)} />
-
-      {/* Cyber-Snake CRT Retro Mini-Game Modal */}
       <RetroSnakeGameModal isOpen={isGameOpen} onClose={() => setIsGameOpen(false)} />
+      <DevTypingSpeedModal isOpen={isTypingOpen} onClose={() => setIsTypingOpen(false)} />
+      <RetroMinesweeperModal isOpen={isMinesOpen} onClose={() => setIsMinesOpen(false)} />
 
       {/* Interactive 3D Connected Particle Sphere Background */}
       <ParticleSphereBg isZenMode={isZenMode} />
