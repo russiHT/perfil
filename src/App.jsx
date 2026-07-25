@@ -13,6 +13,7 @@ import InteractiveCli from './components/InteractiveCli';
 import ContactSection from './components/ContactSection';
 import TerminalFooter from './components/TerminalFooter';
 import SystemDiagnosticPanel from './components/SystemDiagnosticPanel';
+import RetroSnakeGameModal from './components/RetroSnakeGameModal';
 import { RotateCcw, Eye } from 'lucide-react';
 
 export default function App() {
@@ -20,6 +21,7 @@ export default function App() {
   const [isMuted, setIsMuted] = useState(false);
   const [isZenMode, setIsZenMode] = useState(false);
   const [isDiagOpen, setIsDiagOpen] = useState(false);
+  const [isGameOpen, setIsGameOpen] = useState(false);
 
   const playClickSound = () => {
     if (isMuted) return;
@@ -46,6 +48,12 @@ export default function App() {
     return () => window.removeEventListener('click', handleClick);
   }, [isMuted]);
 
+  useEffect(() => {
+    const handleOpenGame = () => setIsGameOpen(true);
+    window.addEventListener('open-snake-game', handleOpenGame);
+    return () => window.removeEventListener('open-snake-game', handleOpenGame);
+  }, []);
+
   const triggerResetSphere = () => {
     window.dispatchEvent(new CustomEvent('reset-sphere'));
   };
@@ -65,6 +73,9 @@ export default function App() {
 
       {/* Interactive System Hardware Diagnostic Panel */}
       <SystemDiagnosticPanel isOpen={isDiagOpen} onClose={() => setIsDiagOpen(false)} />
+
+      {/* Cyber-Snake CRT Retro Mini-Game Modal */}
+      <RetroSnakeGameModal isOpen={isGameOpen} onClose={() => setIsGameOpen(false)} />
 
       {/* Interactive 3D Connected Particle Sphere Background */}
       <ParticleSphereBg isZenMode={isZenMode} />

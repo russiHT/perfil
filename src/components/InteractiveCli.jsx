@@ -140,6 +140,7 @@ export default function InteractiveCli({ onOpenDiag }) {
 - about             : Resumo sobre Russi
 - skills            : Habilidades & Tecnologias
 - projects          : Projetos recentes em destaque
+- snake / game   : Jogar mini-game retrô Cyber-Snake CRT
 - morse <texto>     : Codificar texto para Código Morse (com áudio bip CRT)
 - unmorse <código>  : Decodificar Código Morse para texto
 - b64encode <texto> : Codificar texto para Base64
@@ -156,6 +157,13 @@ export default function InteractiveCli({ onOpenDiag }) {
 - contact           : Formas de contato
 - clear             : Limpar tela`
         });
+        break;
+
+      case 'snake':
+      case 'game':
+      case 'jogar':
+        window.dispatchEvent(new CustomEvent('open-snake-game'));
+        newHistory.push({ type: 'sys', text: '> [GAME ENGINE]: Inicializando Cyber-Snake CRT v2.1...' });
         break;
 
       case 'morse':
@@ -382,15 +390,26 @@ drwx------ 2 russi russi 4096 /vault/emotion_engine.dat
           <span>CLI INTERATIVO // INTERACTIVE COMMAND PROMPT</span>
         </div>
 
-        <button
-          onClick={() => setIsFullscreen(!isFullscreen)}
-          className="terminal-link"
-          style={{ padding: '4px 10px', fontSize: '0.75rem' }}
-          title={isFullscreen ? "Sair da Tela Cheia" : "Tela Cheia"}
-        >
-          {isFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
-          <span>{isFullscreen ? 'Sair Fullscreen' : 'Fullscreen'}</span>
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('open-snake-game'))}
+            className="terminal-link"
+            style={{ padding: '4px 10px', fontSize: '0.75rem', background: 'var(--amber-soft-glow)' }}
+            title="Jogar Mini-Game Retrô"
+          >
+            <span>🎮 JOGAR SNAKE</span>
+          </button>
+
+          <button
+            onClick={() => setIsFullscreen(!isFullscreen)}
+            className="terminal-link"
+            style={{ padding: '4px 10px', fontSize: '0.75rem' }}
+            title={isFullscreen ? "Sair da Tela Cheia" : "Tela Cheia"}
+          >
+            {isFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+            <span>{isFullscreen ? 'Sair Fullscreen' : 'Fullscreen'}</span>
+          </button>
+        </div>
       </div>
 
       <div
