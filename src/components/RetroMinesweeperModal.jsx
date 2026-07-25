@@ -35,7 +35,7 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
       gain.connect(ctx.destination);
       osc.start();
       osc.stop(ctx.currentTime + duration);
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const initializeBoard = () => {
@@ -186,7 +186,7 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
     return newBoard;
   };
 
-  // High-Performance Non-Stalling Autopilot Solver Bot Loop
+  // Autopilot Bot Loop (60ms interval)
   useEffect(() => {
     if (!isOpen || !isPlaying || isGameOver || isWon || !isAutopilot) return;
 
@@ -198,7 +198,7 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
         const hasAnyRevealed = prevBoard.some(row => row.some(cell => cell.isRevealed));
 
         if (!hasAnyRevealed) {
-          // Pick a random corner tile at the start!
+          // Pick a random corner tile at start
           const openCorners = CORNERS.filter(c => !prevBoard[c.r][c.c].isRevealed && !prevBoard[c.r][c.c].isFlagged);
           const pick = openCorners.length > 0
             ? openCorners[Math.floor(Math.random() * openCorners.length)]
@@ -207,7 +207,7 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
         }
 
         let newBoard = prevBoard.map(row => row.map(cell => ({ ...cell })));
-        let actionTaken = false;
+        let anyActionInThisPass = false;
 
         const getNeighbors = (r, c, b) => {
           const neighbors = [];
@@ -224,37 +224,49 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
           return neighbors;
         };
 
-        // 2. Deterministic deduction rules
-        for (let r = 0; r < BOARD_SIZE; r++) {
-          for (let c = 0; c < BOARD_SIZE; c++) {
-            const cell = newBoard[r][c];
-            if (!cell.isRevealed || cell.neighborMines === 0) continue;
+        // Batch deductions in a single tick until no more instant moves exist
+        let changedInLoop = true;
+        let loopLimit = 0;
 
-            const neighbors = getNeighbors(r, c, newBoard);
-            const hidden = neighbors.filter(n => !n.isRevealed && !n.isFlagged);
-            const flagged = neighbors.filter(n => n.isFlagged);
+        while (changedInLoop && loopLimit < 10) {
+          changedInLoop = false;
+          loopLimit++;
 
-            // Rule A: All remaining hidden neighbors are mines -> Flag them
-            if (hidden.length > 0 && hidden.length + flagged.length === cell.neighborMines) {
-              hidden.forEach(n => {
-                newBoard[n.r][n.c].isFlagged = true;
-                setFlagsLeft(f => Math.max(0, f - 1));
-                playSound(800, 'triangle', 0.06);
-              });
-              actionTaken = true;
-              break;
-            }
+          for (let r = 0; r < BOARD_SIZE; r++) {
+            for (let c = 0; c < BOARD_SIZE; c++) {
+              const cell = newBoard[r][c];
+              if (!cell.isRevealed || cell.neighborMines === 0) continue;
 
-            // Rule B: All mines are flagged, remaining hidden neighbors are safe -> Reveal
-            if (flagged.length === cell.neighborMines && hidden.length > 0) {
-              const safe = hidden[0];
-              return revealCell(safe.r, safe.c, newBoard);
+              const neighbors = getNeighbors(r, c, newBoard);
+              const hidden = neighbors.filter(n => !n.isRevealed && !n.isFlagged);
+              const flagged = neighbors.filter(n => n.isFlagged);
+
+              // Rule A: All remaining hidden neighbors are mines -> Flag ALL of them
+              if (hidden.length > 0 && hidden.length + flagged.length === cell.neighborMines) {
+                hidden.forEach(n => {
+                  newBoard[n.r][n.c].isFlagged = true;
+                  setFlagsLeft(f => Math.max(0, f - 1));
+                });
+                changedInLoop = true;
+                anyActionInThisPass = true;
+              }
+
+              // Rule B: All mines are flagged, remaining hidden neighbors are safe -> Reveal ALL of them
+              if (flagged.length === cell.neighborMines && hidden.length > 0) {
+                hidden.forEach(n => {
+                  newBoard = revealCell(n.r, n.c, newBoard);
+                });
+                changedInLoop = true;
+                anyActionInThisPass = true;
+              }
             }
           }
-          if (actionTaken) break;
         }
 
-        if (actionTaken) return newBoard;
+        if (anyActionInThisPass) {
+          playSound(750, 'square', 0.04);
+          return newBoard;
+        }
 
         // 3. Fallback move if no 100% deterministic move found:
         // Prioritize picking an unrevealed corner tile
@@ -281,7 +293,7 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
 
         return newBoard;
       });
-    }, 220);
+    }, 60);
 
     return () => clearInterval(botInterval);
   }, [isOpen, isPlaying, isGameOver, isWon, isAutopilot]);
