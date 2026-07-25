@@ -113,7 +113,7 @@ export default function SystemDiagnosticPanel({ isOpen, onClose }) {
         {/* Action Controls */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
           <div style={{ fontSize: '0.75rem', color: 'var(--amber-dim)' }}>
-            STATUS DO SISTEMA: OPERACIONAL (OS v2.6)
+            STATUS DO SISTEMA: OPERACIONAL (OS v2.1)
           </div>
         </div>
       </div>

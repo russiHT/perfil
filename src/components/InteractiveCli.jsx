@@ -72,7 +72,7 @@ const playMorseBeeps = (morseString) => {
 
 export default function InteractiveCli({ onOpenDiag }) {
   const [history, setHistory] = useState([
-    { type: 'sys', text: 'Terminal interativo v2.6. Digite "help" para ver os comandos disponíveis.' }
+    { type: 'sys', text: 'Terminal interativo v2.1. Digite "help" para ver os comandos disponíveis.' }
   ]);
   const [input, setInput] = useState('');
   const [isMatrixActive, setIsMatrixActive] = useState(false);
