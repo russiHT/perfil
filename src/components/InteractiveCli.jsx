@@ -136,6 +136,7 @@ export default function InteractiveCli({ onOpenDiag }) {
         newHistory.push({
           type: 'sys',
           text: `Comandos disponíveis:
+- drive / nightdrive   : Alternar modo de direção noturna 3D (Highway Grid)
 - passgen <tamanho>     : Gerar senha criptográfica forte e copiar para o clipboard
 - typing / wpm          : Teste de velocidade de digitação de código em WPM
 - minesweeper / mines   : Mini-game retrô Campo Minado CRT
@@ -184,8 +185,6 @@ export default function InteractiveCli({ onOpenDiag }) {
 
       case 'drive':
       case 'nightdrive':
-      case 'garagem':
-      case 'garage':
         window.dispatchEvent(new CustomEvent('toggle-night-drive'));
         newHistory.push({ type: 'sys', text: '> [NIGHT DRIVE ENGINE]: Alternando modo Piloto Noturno / Highway Grid...' });
         break;

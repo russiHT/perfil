@@ -3,6 +3,8 @@ import { animate } from 'animejs';
 
 export default function ParticleSphereBg({ isZenMode = false, isNightDrive = false }) {
   const canvasRef = useRef(null);
+  const isNightDriveRef = useRef(isNightDrive);
+  isNightDriveRef.current = isNightDrive;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -210,7 +212,7 @@ export default function ParticleSphereBg({ isZenMode = false, isNightDrive = fal
       ctx.fillRect(0, 0, width, height);
 
       // Render 3D Night Drive Highway Grid when active
-      if (isNightDrive) {
+      if (isNightDriveRef.current) {
         const roadY = height * 0.58;
         const horizonX = width / 2;
 

@@ -5,14 +5,14 @@ const GARAGE_CARS = [
   {
     id: 'r34',
     name: 'Nissan Skyline GT-R (BNR34)',
-    category: 'JDM Legend',
+    category: 'JDM',
     engine: 'RB26DETT Twin-Turbo',
     power: '320 CV @ 6800 RPM',
     torque: '40.0 Kgfm @ 4400 RPM',
     trans: '6-Speed Manual Getrag',
     drive: 'ATTESA E-TS Pro AWD',
     topSpeed: '250 km/h (Limitado)',
-    desc: 'O ícone supremo do automobilismo japonês com tração integral inteligente e duplo turbo.',
+    desc: 'O ícone do automobilismo japonês com tração integral e duplo turbo.',
     specs: [
       { label: 'Cilindrada', val: '2.568 cc L6' },
       { label: 'Redline', val: '8.000 RPM' },
@@ -48,7 +48,7 @@ const GARAGE_CARS = [
     trans: '4-Speed Manual Heavy Duty',
     drive: 'RWD (Motor Traseiro)',
     topSpeed: '260 km/h',
-    desc: 'A lendária "Widowmaker" alemã com turbocompressor de resposta brutal e tração traseira puro sangue.',
+    desc: 'A lendária alemã com turbocompressor e tração traseira.',
     specs: [
       { label: 'Cilindrada', val: '3.299 cc Flat-6' },
       { label: 'Redline', val: '6.700 RPM' },
@@ -66,7 +66,7 @@ const GARAGE_CARS = [
     trans: '6-Speed DSG / Manual',
     drive: 'FWD com Blocante VAQ',
     topSpeed: '270 km/h',
-    desc: 'Projeto street com remap Stage 2, downpipe em inox, intake esportivo e pop & bangs no mapa.',
+    desc: 'Projeto com remap Stage 2, downpipe em inox, intake esportivo e pops & bangs.',
     specs: [
       { label: 'Cilindrada', val: '1.984 cc Turbo' },
       { label: 'Redline', val: '7.000 RPM' },
@@ -100,7 +100,7 @@ export default function GarageSection({ isNightDrive, onToggleNightDrive }) {
       gain.connect(ctx.destination);
       osc.start();
       osc.stop(ctx.currentTime + 0.15);
-    } catch (e) {}
+    } catch (e) { }
   };
 
   return (
@@ -117,7 +117,7 @@ export default function GarageSection({ isNightDrive, onToggleNightDrive }) {
               marginBottom: '4px'
             }}
           >
-            ## garage_specs // telemetria automotiva
+            ## garage_specs
           </h2>
           <p style={{ color: 'var(--amber-dim)', fontSize: '0.88rem' }}>
             coisas que fazem barulho quando carregam, motores, modificações e telemetria.
