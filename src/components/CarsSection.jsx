@@ -39,15 +39,39 @@ const GARAGE_CARS = [
     revFreq: [150, 380, 700, 260]
   },
   {
+    id: 'lexus-lfa',
+    name: 'Lexus LFA (LFA10)',
+    era: '2010 - 2012',
+    category: 'V10 Supercar / JDM',
+    engine: '4.8L V10 N/A (1LR-GUE com acústica Yamaha)',
+    power: '560 HP @ 8700 RPM',
+    torque: '480 Nm @ 6800 RPM',
+    drivetrain: 'Traseira (RWD) com Transaxle',
+    desc: 'Superesportivo com o motor V10 de aspiração natural mais sinfônico do mundo projetado em parceria com a divisão musical da Yamaha. Sobe de 0 a 9000 RPM em incríveis 0.6s.',
+    revFreq: [320, 850, 1600, 550]
+  },
+  {
+    id: 'rx7-fc',
+    name: 'Mazda RX-7 Savanna (FC3S)',
+    era: '1985 - 1992',
+    category: 'Rotary Turbo / Pop-Up Headlights',
+    engine: '1.3L Turbo Rotary Wankel (13B-DEI)',
+    power: '205 HP @ 6500 RPM',
+    torque: '270 Nm @ 3500 RPM',
+    drivetrain: 'Traseira (RWD)',
+    desc: 'Ícone dos anos 80 com faróis escamoteáveis pop-up, chassi equilibrado e o icônico motor rotativo Wankel turbo de alta aceleração.',
+    revFreq: [200, 550, 1050, 380]
+  },
+  {
     id: 'rx7-fd',
-    name: 'Mazda RX-7 (FD3S)',
+    name: 'Mazda RX-7 Spirit R (FD3S)',
     era: '1992 - 2002',
     category: 'Rotary Turbo / JDM',
     engine: '1.3L Twin-Rotary Wankel (13B-REW)',
-    power: '255 HP @ 6500 RPM',
-    torque: '294 Nm @ 5000 RPM',
+    power: '280 HP @ 6500 RPM',
+    torque: '314 Nm @ 5000 RPM',
     drivetrain: 'Traseira (RWD)',
-    desc: 'Engenharia pura com motor rotativo Wankel bi-turbo sequencial e distribuição de peso perfeita 50:50.',
+    desc: 'Engenharia pura com motor rotativo Wankel bi-turbo sequencial, bancos Recaro em carbono e distribuição de peso perfeita 50:50.',
     revFreq: [220, 600, 1100, 400]
   }
 ];

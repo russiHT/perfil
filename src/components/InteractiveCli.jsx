@@ -168,7 +168,9 @@ export default function InteractiveCli({ onOpenDiag }) {
 - Nissan Skyline GT-R (R32 / R34) [2.6L Twin-Turbo RB26DETT // 280 HP]
 - Chevrolet Opala SS 4.1L         [4.1L 250-S 6-Cilindros // 171 HP]
 - VW Gol Quadrado GTS / GTI       [2.0L AP 2000 Injeção LE-Jetronic // 120 HP]
-- Mazda RX-7 (FD3S)               [1.3L Twin-Rotary Wankel 13B-REW // 255 HP]
+- Lexus LFA (LFA10)               [4.8L V10 N/A 1LR-GUE Yamaha // 560 HP]
+- Mazda RX-7 Savanna (FC3S)       [1.3L Turbo Wankel 13B-DEI // 205 HP]
+- Mazda RX-7 Spirit R (FD3S)      [1.3L Twin-Rotary Wankel 13B-REW // 280 HP]
 > Role até a seção "carros_ & motores" para testar a telemetria e o ronco dos motores via Web Audio!`
         });
         break;
