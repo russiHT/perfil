@@ -136,12 +136,14 @@ export default function GarageSection({ isNightDrive, onToggleNightDrive }) {
             fontSize: '0.82rem',
             background: isNightDrive ? 'var(--amber-primary)' : 'var(--amber-soft-glow)',
             color: isNightDrive ? '#070500' : 'var(--amber-primary)',
-            fontWeight: '800'
+            fontWeight: '800',
+            minWidth: '240px',
+            justifyContent: 'center'
           }}
           title="Alternar Modo Piloto Noturno (Highway Night Cruise Background)"
         >
           <Moon size={15} />
-          <span>{isNightDrive ? 'MODO NIGHT DRIVE: ATIVO' : 'MODO NIGHT DRIVE: DESATIVADO'}</span>
+          <span>{isNightDrive ? 'NIGHT DRIVE: ATIVO' : 'NIGHT DRIVE: DESATIVADO'}</span>
         </button>
       </div>
 
