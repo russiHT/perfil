@@ -39,7 +39,7 @@ export default function AboutSection() {
           opacity: 0.9
         }}
       >
-        direto da linha de comando. gosto de terminais antigos, carros, e de coisas que fazem barulho quando carregam. este é meu espaço — role para baixo pra puxar os próximos pacotes.
+        direto da linha de comando. gosto de terminais antigos, carros antigos e de coisas que fazem barulho quando carregam. explore todas as partes, talvez encontre coisas novas.
       </p>
 
       {/* Metrics Grid */}

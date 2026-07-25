@@ -11,6 +11,7 @@ import ProjectsSection from './components/ProjectsSection';
 import GithubStatsCard from './components/GithubStatsCard';
 import InteractiveCli from './components/InteractiveCli';
 import ContactSection from './components/ContactSection';
+import CarsSection from './components/CarsSection';
 import TerminalFooter from './components/TerminalFooter';
 import SystemDiagnosticPanel from './components/SystemDiagnosticPanel';
 import RetroSnakeGameModal from './components/RetroSnakeGameModal';
@@ -164,6 +165,9 @@ export default function App() {
 
           {/* Projects / Registros Section */}
           <ProjectsSection />
+
+          {/* Cars / Garagem Retrô & Motores Section */}
+          <CarsSection />
 
           {/* Contact / Canal Aberto Section */}
           <ContactSection />

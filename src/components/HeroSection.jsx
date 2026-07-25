@@ -16,7 +16,7 @@ export default function HeroSection() {
           userSelect: 'none'
         }}
       >
-        russi<span className="terminal-caret" />
+        # russi<span className="terminal-caret" />
       </h1>
 
       {/* Transmission subtitle */}

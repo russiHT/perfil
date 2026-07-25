@@ -8,7 +8,7 @@ const TRACKS = [
     youtubeId: "oIYlSJPMQ38"
   },
   {
-    title: "dazegxd — breakbeat / liquid dnb",
+    title: "dazegxd — idk what love is",
     artist: "dazegxd",
     youtubeId: "X0ArmTeJN84"
   },
