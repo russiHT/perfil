@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { Gauge, Volume2, X, Play, Pause, Disc, Award } from 'lucide-react';
+import React, { useState } from 'react';
+import { Gauge, Volume2, X, ExternalLink } from 'lucide-react';
 
 const GARAGE_CARS = [
   {
@@ -12,8 +12,8 @@ const GARAGE_CARS = [
     torque: '392 Nm @ 4400 RPM',
     drivetrain: 'ATTESA E-TS AWD',
     desc: 'Lenda do automobilismo de alta tecnologia dos anos 90 com tração inteligente e sistema HICAS de esterçamento nas 4 rodas.',
-    youtubeAudioId: 'Z-dG7P2vS_A',
-    audioTitle: 'Nissan Skyline GT-R RB26DETT Twin-Turbo Engine Sound'
+    revProfile: { base: 180, mid: 520, peak: 980, type: 'sawtooth', turboBlowoff: true },
+    youtubeUrl: 'https://www.youtube.com/watch?v=Z-dG7P2vS_A'
   },
   {
     id: 'opala-ss',
@@ -25,8 +25,8 @@ const GARAGE_CARS = [
     torque: '320 Nm @ 2600 RPM',
     drivetrain: 'Traseira (RWD)',
     desc: 'Clássico nacional dos anos 70 com o icônico motor 250-S de 6 cilindros, tuchos mecânicos e ronco inconfundível.',
-    youtubeAudioId: '1t4K44g4K-w',
-    audioTitle: 'Chevrolet Opala 4.1L 250-S 6-Cilindros Ronco Real'
+    revProfile: { base: 110, mid: 280, peak: 560, type: 'triangle', turboBlowoff: false },
+    youtubeUrl: 'https://www.youtube.com/watch?v=1t4K44g4K-w'
   },
   {
     id: 'gol-gts',
@@ -38,8 +38,8 @@ const GARAGE_CARS = [
     torque: '175 Nm @ 3200 RPM',
     drivetrain: 'Dianteira (FWD)',
     desc: 'O primeiro carro nacional com injeção eletrônica de combustível. Desempenho ágil, painel de instrumentos esportivo e volante de quatro bolas.',
-    youtubeAudioId: '6rY6_6k90kw',
-    audioTitle: 'VW Gol GTS AP 2.0 Ronco do Motor & Aceleração'
+    revProfile: { base: 150, mid: 420, peak: 780, type: 'square', turboBlowoff: true },
+    youtubeUrl: 'https://www.youtube.com/watch?v=6rY6_6k90kw'
   },
   {
     id: 'lexus-lfa',
@@ -51,8 +51,8 @@ const GARAGE_CARS = [
     torque: '480 Nm @ 6800 RPM',
     drivetrain: 'Traseira (RWD) com Transaxle',
     desc: 'Superesportivo com o motor V10 de aspiração natural mais sinfônico do mundo projetado em parceria com a divisão musical da Yamaha. Sobe de 0 a 9000 RPM em incríveis 0.6s.',
-    youtubeAudioId: 'p6ZD1M32_8w',
-    audioTitle: 'Lexus LFA 4.8L V10 9000 RPM Yamaha Scream Sound'
+    revProfile: { base: 340, mid: 950, peak: 1850, type: 'sawtooth', turboBlowoff: false },
+    youtubeUrl: 'https://www.youtube.com/watch?v=p6ZD1M32_8w'
   },
   {
     id: 'rx7-fc',
@@ -64,8 +64,8 @@ const GARAGE_CARS = [
     torque: '270 Nm @ 3500 RPM',
     drivetrain: 'Traseira (RWD)',
     desc: 'Ícone dos anos 80 com faróis escamoteáveis pop-up, chassi equilibrado e o icônico motor rotativo Wankel turbo de alta aceleração.',
-    youtubeAudioId: 'm0Y_J4pX-94',
-    audioTitle: 'Mazda RX-7 FC3S 13B Turbo Wankel Rotary Sound'
+    revProfile: { base: 220, mid: 620, peak: 1200, type: 'sawtooth', turboBlowoff: true },
+    youtubeUrl: 'https://www.youtube.com/watch?v=m0Y_J4pX-94'
   },
   {
     id: 'rx7-fd',
@@ -77,20 +77,103 @@ const GARAGE_CARS = [
     torque: '314 Nm @ 5000 RPM',
     drivetrain: 'Traseira (RWD)',
     desc: 'Engenharia pura com motor rotativo Wankel bi-turbo sequencial, bancos Recaro em carbono e distribuição de peso perfeita 50:50.',
-    youtubeAudioId: 'm0Y_J4pX-94',
-    audioTitle: 'Mazda RX-7 FD3S Twin-Rotary Wankel Sound'
+    revProfile: { base: 240, mid: 680, peak: 1350, type: 'sawtooth', turboBlowoff: true },
+    youtubeUrl: 'https://www.youtube.com/watch?v=m0Y_J4pX-94'
   }
 ];
 
 export default function CarsSection() {
   const [selectedCar, setSelectedCar] = useState(null);
-  const [playingAudioCar, setPlayingAudioCar] = useState(null);
+  const [playingCar, setPlayingCar] = useState(null);
 
-  const handlePlayRealAudio = (car) => {
-    if (playingAudioCar && playingAudioCar.id === car.id) {
-      setPlayingAudioCar(null);
-    } else {
-      setPlayingAudioCar(car);
+  // Web Audio Multi-Oscillator Engine Rev Synthesizer
+  const playEngineSound = (car) => {
+    setPlayingCar(car);
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      const audioCtx = new AudioCtx();
+
+      // Main engine oscillator
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      // Sub-harmonic oscillator for deep rumble
+      const subOsc = audioCtx.createOscillator();
+      const subGain = audioCtx.createGain();
+
+      const profile = car.revProfile;
+      const now = audioCtx.currentTime;
+
+      osc.type = profile.type;
+      subOsc.type = 'sawtooth';
+
+      // Frequency envelope (RPM acceleration sweep)
+      osc.frequency.setValueAtTime(profile.base, now);
+      osc.frequency.exponentialRampToValueAtTime(profile.mid, now + 0.35);
+      osc.frequency.exponentialRampToValueAtTime(profile.peak, now + 0.9);
+      osc.frequency.exponentialRampToValueAtTime(profile.base * 1.2, now + 1.6);
+
+      subOsc.frequency.setValueAtTime(profile.base * 0.5, now);
+      subOsc.frequency.exponentialRampToValueAtTime(profile.mid * 0.5, now + 0.35);
+      subOsc.frequency.exponentialRampToValueAtTime(profile.peak * 0.5, now + 0.9);
+      subOsc.frequency.exponentialRampToValueAtTime(profile.base * 0.6, now + 1.6);
+
+      // Gain envelope
+      gain.gain.setValueAtTime(0.01, now);
+      gain.gain.linearRampToValueAtTime(0.08, now + 0.35);
+      gain.gain.linearRampToValueAtTime(0.12, now + 0.9);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.8);
+
+      subGain.gain.setValueAtTime(0.02, now);
+      subGain.gain.linearRampToValueAtTime(0.06, now + 0.35);
+      subGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.8);
+
+      osc.connect(gain);
+      subOsc.connect(subGain);
+      gain.connect(audioCtx.destination);
+      subGain.connect(audioCtx.destination);
+
+      osc.start(now);
+      subOsc.start(now);
+      osc.stop(now + 1.8);
+      subOsc.stop(now + 1.8);
+
+      // Turbo Blowoff Valve Sound Effect
+      if (profile.turboBlowoff) {
+        setTimeout(() => {
+          try {
+            const blowoffCtx = new AudioCtx();
+            const bufferSize = blowoffCtx.sampleRate * 0.25;
+            const buffer = blowoffCtx.createBuffer(1, bufferSize, blowoffCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+              data[i] = Math.random() * 2 - 1;
+            }
+            const noise = blowoffCtx.createBufferSource();
+            noise.buffer = buffer;
+
+            const filter = blowoffCtx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.setValueAtTime(2500, blowoffCtx.currentTime);
+
+            const blowGain = blowoffCtx.createGain();
+            blowGain.gain.setValueAtTime(0.08, blowoffCtx.currentTime);
+            blowGain.gain.exponentialRampToValueAtTime(0.0001, blowoffCtx.currentTime + 0.25);
+
+            noise.connect(filter);
+            filter.connect(blowGain);
+            blowGain.connect(blowoffCtx.destination);
+
+            noise.start(blowoffCtx.currentTime);
+          } catch (err) {}
+        }, 950);
+      }
+
+      setTimeout(() => {
+        setPlayingCar(null);
+      }, 1800);
+    } catch (e) {
+      setPlayingCar(null);
     }
   };
 
@@ -132,14 +215,14 @@ export default function CarsSection() {
       </p>
 
       {/* Playing Audio Notification Banner */}
-      {playingAudioCar && (
+      {playingCar && (
         <div
           className="terminal-card"
           style={{
             marginBottom: '24px',
             padding: '16px 20px',
             border: '1px solid var(--amber-primary)',
-            boxShadow: '0 0 30px var(--amber-glow)',
+            boxShadow: '0 0 35px var(--amber-glow)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -151,33 +234,24 @@ export default function CarsSection() {
             <Volume2 size={20} color="var(--amber-bright)" className="crt-flicker" />
             <div>
               <div style={{ color: 'var(--amber-bright)', fontWeight: '800', fontSize: '0.92rem' }}>
-                &gt; TOCANDO RONCO REAL DO MOTOR: {playingAudioCar.name}
+                &gt; ACELERANDO MOTOR: {playingCar.name}
               </div>
               <div style={{ color: 'var(--amber-dim)', fontSize: '0.78rem', marginTop: '2px' }}>
-                {playingAudioCar.engine} ({playingAudioCar.audioTitle})
+                {playingCar.engine} (Sintetizador Web Audio API em Tempo Real)
               </div>
             </div>
           </div>
 
-          <button
-            onClick={() => setPlayingAudioCar(null)}
+          <a
+            href={playingCar.youtubeUrl}
+            target="_blank"
+            rel="noreferrer"
             className="terminal-link"
-            style={{ padding: '6px 14px', fontSize: '0.8rem', background: 'var(--amber-primary)', color: '#0d0a00', fontWeight: '800' }}
+            style={{ padding: '6px 14px', fontSize: '0.78rem', background: 'var(--amber-primary)', color: '#0d0a00', fontWeight: '800' }}
           >
-            <X size={14} />
-            <span>PAUSAR RONCO</span>
-          </button>
-
-          {/* Hidden YouTube Iframe Audio Player */}
-          <div style={{ position: 'absolute', opacity: 0.01, pointerEvents: 'none', width: '1px', height: '1px', overflow: 'hidden' }}>
-            <iframe
-              width="1"
-              height="1"
-              src={`https://www.youtube.com/embed/${playingAudioCar.youtubeAudioId}?autoplay=1&controls=0`}
-              title="Real Engine Sound Audio"
-              allow="autoplay"
-            />
-          </div>
+            <ExternalLink size={13} />
+            <span>VÍDEO REAL NO YOUTUBE</span>
+          </a>
         </div>
       )}
 
@@ -190,7 +264,7 @@ export default function CarsSection() {
         }}
       >
         {GARAGE_CARS.map((car) => {
-          const isAudioPlaying = playingAudioCar && playingAudioCar.id === car.id;
+          const isAudioPlaying = playingCar && playingCar.id === car.id;
           return (
             <div
               key={car.id}
@@ -246,7 +320,7 @@ export default function CarsSection() {
               {/* Action Buttons */}
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 <button
-                  onClick={() => handlePlayRealAudio(car)}
+                  onClick={() => playEngineSound(car)}
                   className="terminal-link"
                   style={{
                     padding: '6px 12px',
@@ -257,10 +331,10 @@ export default function CarsSection() {
                     color: isAudioPlaying ? '#070500' : 'var(--amber-primary)',
                     fontWeight: '800'
                   }}
-                  title="Ouvir Ronco Real Autêntico do Motor"
+                  title="Ouvir Aceleração do Motor via Web Audio API"
                 >
-                  {isAudioPlaying ? <Pause size={13} /> : <Volume2 size={13} />}
-                  <span>{isAudioPlaying ? 'PAUSAR RONCO' : 'RONCO REAL DO MOTOR'}</span>
+                  <Volume2 size={13} />
+                  <span>{isAudioPlaying ? 'ACELERANDO...' : 'RONCO DO MOTOR'}</span>
                 </button>
 
                 <button
@@ -346,20 +420,27 @@ export default function CarsSection() {
               </div>
             </div>
 
-            {/* Real Audio Synthesizer Action */}
+            {/* Actions */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
               <button
-                onClick={() => handlePlayRealAudio(selectedCar)}
+                onClick={() => playEngineSound(selectedCar)}
                 className="terminal-link"
                 style={{ padding: '8px 18px', background: 'var(--amber-primary)', color: '#0d0a00', fontWeight: '800' }}
               >
                 <Volume2 size={15} />
-                <span>{playingAudioCar && playingAudioCar.id === selectedCar.id ? 'PAUSAR RONCO REAL' : 'OUVIR RONCO REAL DO MOTOR'}</span>
+                <span>OUVIR ACELERAÇÃO DO MOTOR</span>
               </button>
 
-              <span style={{ fontSize: '0.75rem', color: 'var(--amber-dim)' }}>
-                perfil v2.1 // russiHT
-              </span>
+              <a
+                href={selectedCar.youtubeUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="terminal-link"
+                style={{ padding: '8px 14px', fontSize: '0.8rem' }}
+              >
+                <ExternalLink size={13} />
+                <span>ABRIR NO YOUTUBE</span>
+              </a>
             </div>
           </div>
         </div>
