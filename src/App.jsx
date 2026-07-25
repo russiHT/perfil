@@ -125,7 +125,7 @@ export default function App() {
             }}
           >
             <Eye size={16} />
-            <span>Mostrar Escritas</span>
+            <span>Mostrar Textos</span>
           </button>
         </div>
       )}

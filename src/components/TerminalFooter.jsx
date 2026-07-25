@@ -28,10 +28,10 @@ export default function TerminalFooter({ onToggleHideText }) {
             fontSize: '0.85rem',
             cursor: 'pointer'
           }}
-          title="Modo Zen: Ocultar todas as escritas"
+          title="Ocultar texto em tela"
         >
           <EyeOff size={16} />
-          <span>Ocultar Escritas</span>
+          <span>Ocultar Textos</span>
         </button>
       </div>
 
