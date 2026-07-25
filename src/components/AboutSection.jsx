@@ -1,7 +1,10 @@
-import React from 'react';
-import { Activity, MapPin, Cpu, Clock } from 'lucide-react';
+import React, { useState } from 'react';
+import { Activity, MapPin, Cpu, Clock, Code2 } from 'lucide-react';
+import SiteCodeSnippetsModal from './SiteCodeSnippetsModal';
 
 export default function AboutSection() {
+  const [isSnippetsOpen, setIsSnippetsOpen] = useState(false);
+
   const metrics = [
     { label: 'STATUS', value: 'online', icon: Activity, pulse: true },
     { label: 'LOCAL', value: 'brasil', icon: MapPin },
@@ -78,9 +81,21 @@ export default function AboutSection() {
 
       {/* Short Tech Specs about THIS site */}
       <div className="terminal-card" style={{ padding: '20px', background: 'rgba(18, 13, 2, 0.75)' }}>
-        <div style={{ fontSize: '0.8rem', color: 'var(--amber-dim)', fontWeight: '700', marginBottom: '10px' }}>
-          // SOBRE A ARQUITETURA DESTE SITE (perfil v2.1)
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+          <div style={{ fontSize: '0.8rem', color: 'var(--amber-dim)', fontWeight: '700' }}>
+            // SOBRE A ARQUITETURA DESTE SITE (perfil v2.1)
+          </div>
+
+          <button
+            onClick={() => setIsSnippetsOpen(true)}
+            className="terminal-link"
+            style={{ padding: '6px 12px', fontSize: '0.78rem', background: 'var(--amber-primary)', color: '#0d0a00', fontWeight: '800' }}
+          >
+            <Code2 size={14} />
+            <span>EXPLORAR CODE SNIPPETS DO SITE</span>
+          </button>
         </div>
+
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px', fontSize: '0.88rem' }}>
           <div>
             <strong style={{ color: 'var(--amber-bright)' }}>• Web Audio Synthesizer:</strong>
@@ -96,6 +111,12 @@ export default function AboutSection() {
           </div>
         </div>
       </div>
+
+      {/* Site Code Snippets Explorer Modal */}
+      <SiteCodeSnippetsModal
+        isOpen={isSnippetsOpen}
+        onClose={() => setIsSnippetsOpen(false)}
+      />
     </section>
   );
 }

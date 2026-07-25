@@ -450,7 +450,7 @@ drwx------ 2 russi russi 4096 /vault/emotion_engine.dat
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Digite 'help', 'morse SOS', 'json'... "
+          placeholder="Digite 'help' para ver os comandos disponíveis... "
           style={{
             flex: 1,
             background: 'transparent',
