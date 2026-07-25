@@ -151,6 +151,67 @@ const applyPushForce = (px, py, pushRadius, forceMultiplier) => {
     }
   });
 };`
+  },
+  {
+    id: 'passgen',
+    title: '6. Gerador de Senhas Criptográficas (passgen)',
+    file: 'src/components/InteractiveCli.jsx',
+    icon: Shield,
+    desc: 'Gera senhas seguras utilizando a API nativa window.crypto.getRandomValues com suporte a cópia direta.',
+    code: `// Gerador de senhas aleatórias de alta entropia
+const generatePassword = (len = 16) => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=';
+  const array = new Uint32Array(len);
+  window.crypto.getRandomValues(array);
+  let pass = '';
+  for (let i = 0; i < len; i++) {
+    pass += chars[array[i] % chars.length];
+  }
+  navigator.clipboard.writeText(pass);
+  return pass;
+};`
+  },
+  {
+    id: 'typing-wpm',
+    title: '7. Medidor de Velocidade de Digitação WPM',
+    file: 'src/components/DevTypingSpeedModal.jsx',
+    icon: Cpu,
+    desc: 'Algoritmo que calcula a precisão e velocidade em WPM (Words Per Minute) comparando os caracteres digitados com o snippet alvo.',
+    code: `// Cálculo de WPM e Precisão em tempo real
+const handleInputChange = (e) => {
+  const val = e.target.value;
+  if (!startTime && val.length > 0) setStartTime(Date.now());
+
+  let correctChars = 0;
+  for (let i = 0; i < val.length; i++) {
+    if (val[i] === targetCode[i]) correctChars++;
+  }
+  const currentAcc = val.length > 0 ? Math.floor((correctChars / val.length) * 100) : 100;
+  setAccuracy(currentAcc);
+
+  const timeInMinutes = (Date.now() - startTime) / 60000;
+  const currentWpm = Math.floor((val.length / 5) / (timeInMinutes || 0.001));
+  setWpm(currentWpm);
+};`
+  },
+  {
+    id: 'mines-bot',
+    title: '8. Bot Autopiloto Solver do Campo Minado',
+    file: 'src/components/RetroMinesweeperModal.jsx',
+    icon: Terminal,
+    desc: 'Loop de dedução lógica passo a passo que analisa células abertas, marca minas seguras e revela tiles livres.',
+    code: `// Bot Autopiloto com priorização dos cantos e deduções determinísticas
+useEffect(() => {
+  if (!isOpen || !isPlaying || !isAutopilot) return;
+  const botInterval = setInterval(() => {
+    setBoard((prevBoard) => {
+      // Regra A: Se vizinhos ocultos + marcados == minas -> Marca todas como mina
+      // Regra B: Se minas marcadas == número -> Revela vizinhos livres restantes
+      // Fallback: Escolha aleatória em um dos 4 cantos
+    });
+  }, 140);
+  return () => clearInterval(botInterval);
+}, [isOpen, isPlaying, isAutopilot]);`
   }
 ];
 

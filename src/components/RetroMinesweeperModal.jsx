@@ -375,15 +375,15 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
           {board.map((row, r) =>
             row.map((cell, c) => {
               let content = '';
-              let bg = 'rgba(255, 176, 0, 0.08)';
+              let bg = 'var(--amber-soft-glow)';
               let color = 'var(--amber-primary)';
 
               if (cell.isRevealed) {
                 bg = 'rgba(18, 13, 2, 0.9)';
                 if (cell.isMine) {
                   content = '*';
-                  bg = 'rgba(255, 0, 85, 0.3)';
-                  color = 'var(--amber-bright)';
+                  bg = 'var(--amber-bright)';
+                  color = '#070500';
                 } else if (cell.neighborMines > 0) {
                   content = cell.neighborMines;
                   color = 'var(--amber-bright)';
@@ -391,7 +391,7 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
               } else if (cell.isFlagged) {
                 content = 'F';
                 color = 'var(--amber-bright)';
-                bg = 'rgba(255, 176, 0, 0.25)';
+                bg = 'var(--amber-soft-glow)';
               }
 
               return (

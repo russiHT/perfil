@@ -181,10 +181,10 @@ export default function DevTypingSpeedModal({ isOpen, onClose }) {
               if (i < userInput.length) {
                 if (userInput[i] === char) {
                   charColor = 'var(--amber-bright)';
-                  bg = 'rgba(255, 176, 0, 0.2)';
+                  bg = 'var(--amber-soft-glow)';
                 } else {
-                  charColor = '#ff0055';
-                  bg = 'rgba(255, 0, 85, 0.25)';
+                  charColor = '#070500';
+                  bg = 'var(--amber-bright)';
                 }
               }
 
