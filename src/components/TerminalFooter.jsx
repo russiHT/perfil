@@ -3,7 +3,7 @@ import { EyeOff } from 'lucide-react';
 
 export default function TerminalFooter({ onToggleHideText }) {
   return (
-    <footer 
+    <footer
       style={{
         borderTop: '1px solid var(--border-amber)',
         paddingTop: '32px',
@@ -31,12 +31,12 @@ export default function TerminalFooter({ onToggleHideText }) {
           title="Modo Zen: Ocultar todas as escritas"
         >
           <EyeOff size={16} />
-          <span>Ocultar Escritas (Modo Zen)</span>
+          <span>Ocultar Escritas </span>
         </button>
       </div>
 
       <div>
-        © {new Date().getFullYear()} russi — transmitindo em âmbar
+        © {new Date().getFullYear()} russi
       </div>
     </footer>
   );

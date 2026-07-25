@@ -65,7 +65,8 @@ export default function LoadingScreen({ onComplete }) {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '32px'
+        padding: '32px',
+        pointerEvents: 'all'
       }}
     >
       <div 

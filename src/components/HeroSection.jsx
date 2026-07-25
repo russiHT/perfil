@@ -5,7 +5,7 @@ export default function HeroSection() {
   return (
     <section style={{ marginBottom: '60px', position: 'relative' }}>
       {/* Title */}
-      <h1 
+      <h1
         className="amber-glow-text"
         style={{
           fontFamily: 'var(--font-display)',
@@ -16,11 +16,11 @@ export default function HeroSection() {
           userSelect: 'none'
         }}
       >
-        # russi<span className="terminal-caret" />
+        russi<span className="terminal-caret" />
       </h1>
 
       {/* Transmission subtitle */}
-      <div 
+      <div
         style={{
           color: 'var(--amber-dim)',
           fontSize: '1rem',
@@ -35,7 +35,7 @@ export default function HeroSection() {
         <ChevronDown size={16} className="crt-flicker" />
       </div>
 
-      <div 
+      <div
         style={{
           display: 'inline-block',
           padding: '4px 12px',

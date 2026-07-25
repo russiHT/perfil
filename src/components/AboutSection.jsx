@@ -5,14 +5,14 @@ export default function AboutSection() {
   const metrics = [
     { label: 'STATUS', value: 'online', icon: Activity, pulse: true },
     { label: 'LOCAL', value: 'brasil 🇧🇷', icon: MapPin },
-    { label: 'MODO', value: 'build ⚡', icon: Cpu },
-    { label: 'UPTIME', value: '24/7', icon: Clock }
+    { label: 'MODO', value: 'grind', icon: Cpu },
+    { label: 'UPTIME', value: 'v2.1', icon: Clock }
   ];
 
   return (
     <section style={{ marginBottom: '80px' }}>
       {/* About Heading */}
-      <h2 
+      <h2
         className="amber-glow-text"
         style={{
           fontFamily: 'var(--font-heading)',
@@ -22,11 +22,11 @@ export default function AboutSection() {
           lineHeight: 1.2
         }}
       >
-        ## olá, aqui é o russi.
+        ## eu sou russi.
       </h2>
 
       {/* Main Paragraph */}
-      <p 
+      <p
         style={{
           color: 'var(--amber-primary)',
           fontSize: '1.15rem',
@@ -36,11 +36,11 @@ export default function AboutSection() {
           opacity: 0.9
         }}
       >
-        transmito da linha de comando. gosto de código, terminais antigos, fósforo âmbar e de coisas que fazem barulho quando carregam. este é meu espaço — role para baixo pra puxar os próximos pacotes.
+        direto da linha de comando. gosto de terminais antigos, carros, e de coisas que fazem barulho quando carregam. este é meu espaço — role para baixo pra puxar os próximos pacotes.
       </p>
 
       {/* Metrics Grid */}
-      <div 
+      <div
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
@@ -57,7 +57,7 @@ export default function AboutSection() {
               </div>
               <div style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--amber-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 {m.pulse && (
-                  <span 
+                  <span
                     style={{
                       width: '8px',
                       height: '8px',

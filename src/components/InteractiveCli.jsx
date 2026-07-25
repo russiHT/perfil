@@ -70,8 +70,8 @@ export default function InteractiveCli({ onOpenDiag }) {
 
     switch (cmd) {
       case 'help':
-        newHistory.push({ 
-          type: 'sys', 
+        newHistory.push({
+          type: 'sys',
           text: `Comandos disponíveis:
 - about    : Resumo sobre Russi
 - skills   : Lista de tecnologias & habilidades
@@ -99,10 +99,10 @@ export default function InteractiveCli({ onOpenDiag }) {
         newHistory.push({ 
           type: 'sys', 
           text: `[HABILIDADES & TECNOLOGIAS]:
-• Frontend   : React.js, JavaScript (ES6+), HTML5, CSS3/Tailwind
-• Animações  : Anime.js v4, WebGL Canvas 3D, CSS Scrollytelling
-• Estética   : UI/UX Pro Max, CRT Retro Phosphor, Blade Runner 2049 Aesthetics
-• Ferramentas: Vite, Git, GitHub, Node.js` 
+• Frontend   : React.js, JavaScript (ES6+), HTML5, CSS3
+• Backend    : Java (Spring), Python
+• Animações  : Anime.js v4, WebGL Canvas 3D, CSS Animations
+• Ferramentas: Vite, Git, GitHub, Node.js, Maven` 
         });
         break;
 
@@ -110,46 +110,48 @@ export default function InteractiveCli({ onOpenDiag }) {
         newHistory.push({ 
           type: 'sys', 
           text: `[PROJETOS DESTAQUE]:
-1. Russi CRT Terminal Portfolio (github.com/russiHT)
-2. Streetwear Shop // Emotion Engine Experience
-3. 3D Particle Constellation Sphere Engine` 
+1. perfil          — CRT Terminal Portfolio (JS/React) · github.com/russiHT/perfil
+2. streetwear-shop — Streetwear Shop Experience (JS)   · github.com/russiHT/streetwear-shop
+3. radar-animal    — Radar Animal (JavaScript)         · github.com/russiHT/radar-animal
+4. insinori        — Projeto Java                     · github.com/russiHT/insinori
+5. relatorio-pdf   — Gerador de Relatório PDF (Python) · github.com/russiHT/Gerador-relatorio-pdf` 
         });
         break;
 
       case 'quote':
         const randomQuote = PHILOSOPHY_QUOTES[Math.floor(Math.random() * PHILOSOPHY_QUOTES.length)];
-        newHistory.push({ 
-          type: 'sys', 
-          text: `> "${randomQuote.text}" — ${randomQuote.author}.` 
+        newHistory.push({
+          type: 'sys',
+          text: `> "${randomQuote.text}" — ${randomQuote.author}.`
         });
         break;
 
       case 'uptime':
-        newHistory.push({ 
-          type: 'sys', 
+        newHistory.push({
+          type: 'sys',
           text: `> [SYS STATUS]:
 • Uptime           : 24/7 ONLINE
 • Latência         : 0.4ms (Local Engine)
-• Alocação de Memória: 64MB / Amber Stack
-• Estado da Esfera : Ativa & Calibrada` 
+• Alocação de Memória: 64MB
+• Estado da Esfera : Ativa & Calibrada`
         });
         break;
 
       case 'secret':
-        newHistory.push({ 
-          type: 'sys', 
+        newHistory.push({
+          type: 'sys',
           text: `> [CYBERDECK SECRET DIRECTORY]:
 drwx------ 2 russi russi 4096 /vault/emotion_engine.dat
 -rw-r--r-- 1 russi russi 1024 /vault/blade_runner_logs.txt
 -rw-r--r-- 1 russi russi 2048 /vault/3d_sphere_matrix.cpp
-> Status: ACESSO AUTORIZADO. Nível de segurança: RUSSI_LEVEL_9.` 
+> Status: ACESSO AUTORIZADO. Nível de segurança: RUSSI_LEVEL_9.`
         });
         break;
 
       case 'theme':
         const root = document.documentElement;
         const currentAmber = getComputedStyle(root).getPropertyValue('--amber-primary').trim();
-        
+
         if (currentAmber === '#00f0ff') {
           root.style.setProperty('--amber-primary', '#00ff66');
           root.style.setProperty('--amber-bright', '#55ff99');
@@ -181,14 +183,14 @@ drwx------ 2 russi russi 4096 /vault/emotion_engine.dat
       case 'sphere':
       case 'reset-sphere':
         triggerResetSphere();
-        newHistory.push({ 
-          type: 'sys', 
-          text: '> [SYS]: Esfera 3D recalibrada e restaurada às coordenadas matriciais iniciais com sucesso!' 
+        newHistory.push({
+          type: 'sys',
+          text: '> [SYS]: Esfera 3D recalibrada e restaurada às coordenadas matriciais iniciais'
         });
         break;
 
       case 'matrix':
-        newHistory.push({ type: 'sys', text: '> [SYS]: Inicializando protocolo Matrix Digital Rain...' });
+        newHistory.push({ type: 'sys', text: '> [SYS]: Inicializando protocolo...' });
         setIsMatrixActive(true);
         break;
 
@@ -202,7 +204,7 @@ drwx------ 2 russi russi 4096 /vault/emotion_engine.dat
         break;
 
       case 'contact':
-        newHistory.push({ type: 'sys', text: 'Instagram: @grussi_\nGitHub: russiHT\nEmail: otariolho@gmail.com' });
+        newHistory.push({ type: 'sys', text: 'Instagram: @grussi_\nGitHub: russiHT\nEmail: gustavorussi07@gmail.com\nDiscord: russizin' });
         break;
 
       case 'clear':
@@ -220,10 +222,10 @@ drwx------ 2 russi russi 4096 /vault/emotion_engine.dat
   };
 
   return (
-    <div 
-      className="terminal-card" 
-      style={{ 
-        marginBottom: '80px', 
+    <div
+      className="terminal-card"
+      style={{
+        marginBottom: '80px',
         padding: '20px',
         ...(isFullscreen ? {
           position: 'fixed',
@@ -257,26 +259,26 @@ drwx------ 2 russi russi 4096 /vault/emotion_engine.dat
         </button>
       </div>
 
-      <div 
+      <div
         ref={outputRef}
-        style={{ 
+        style={{
           maxHeight: isFullscreen ? 'calc(100vh - 160px)' : '220px',
           flex: isFullscreen ? 1 : 'none',
-          overflowY: 'auto', 
-          marginBottom: '14px', 
-          fontFamily: 'monospace', 
-          fontSize: isFullscreen ? '0.95rem' : '0.85rem', 
-          lineHeight: 1.6 
+          overflowY: 'auto',
+          marginBottom: '14px',
+          fontFamily: 'monospace',
+          fontSize: isFullscreen ? '0.95rem' : '0.85rem',
+          lineHeight: 1.6
         }}
       >
         {history.map((h, i) => (
-          <div 
-            key={i} 
-            style={{ 
-              color: h.type === 'user' 
-                ? 'var(--amber-bright)' 
-                : h.type === 'matrix' 
-                  ? '#00ff66' 
+          <div
+            key={i}
+            style={{
+              color: h.type === 'user'
+                ? 'var(--amber-bright)'
+                : h.type === 'matrix'
+                  ? '#00ff66'
                   : 'var(--amber-primary)',
               opacity: h.type === 'user' ? 1 : 0.88,
               whiteSpace: 'pre-wrap',
@@ -308,8 +310,8 @@ drwx------ 2 russi russi 4096 /vault/emotion_engine.dat
             padding: '4px 0'
           }}
         />
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           className="terminal-link"
           style={{ padding: '6px 14px', fontSize: '0.8rem' }}
         >

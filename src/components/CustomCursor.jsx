@@ -50,10 +50,10 @@ export default function CustomCursor() {
           borderRadius: '50%',
           transform: 'translate(-50%, -50%)',
           pointerEvents: 'none',
-          zIndex: 9999,
+          zIndex: 999999,
           boxShadow: isHovered ? '0 0 20px var(--amber-glow)' : '0 0 10px var(--amber-soft-glow)',
-          transition: 'width 0.15s ease, height 0.15s ease, border-color 0.15s ease',
-          background: isMouseDown ? 'rgba(255, 176, 0, 0.25)' : 'transparent'
+          transition: 'width 0.15s ease, height 0.15s ease, border-color 0.15s ease, background 0.1s ease',
+          background: isMouseDown ? 'var(--amber-soft-glow)' : 'transparent'
         }}
       />
 
@@ -69,7 +69,7 @@ export default function CustomCursor() {
           borderRadius: '50%',
           transform: 'translate(-50%, -50%)',
           pointerEvents: 'none',
-          zIndex: 10000,
+          zIndex: 1000000,
           boxShadow: '0 0 8px var(--amber-primary)'
         }}
       />

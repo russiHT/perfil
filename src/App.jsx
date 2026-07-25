@@ -82,12 +82,12 @@ export default function App() {
             zIndex: 100,
             display: 'flex',
             gap: '14px',
-            background: 'rgba(18, 13, 2, 0.85)',
+            background: 'var(--bg-crt-box)',
             backdropFilter: 'blur(16px)',
             border: '1px solid var(--border-amber)',
             borderRadius: '8px',
             padding: '12px 20px',
-            boxShadow: '0 10px 35px rgba(255, 176, 0, 0.3)'
+            boxShadow: '0 10px 35px var(--amber-soft-glow)'
           }}
         >
           <button
