@@ -19,7 +19,7 @@ const TRACKS = [
   }
 ];
 
-export default function CyberpunkRadio({ globalMute = false }) {
+export default function RadioPlayer({ globalMute = false }) {
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(70);

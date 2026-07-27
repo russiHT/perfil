@@ -215,8 +215,8 @@ useEffect(() => {
   },
   {
     id: 'yt-radio',
-    title: '9. Cyberpunk Radio Player (YouTube IFrame API)',
-    file: 'src/components/CyberpunkRadio.jsx',
+    title: '9. Radio Player (YouTube IFrame API)',
+    file: 'src/components/RadioPlayer.jsx',
     icon: Music,
     desc: 'Player de áudio flutuante com inércia física que consome a IFrame Player API nativa do YouTube em background silencioso.',
     code: `// Inicialização do Player de Rádio YouTube IFrame API

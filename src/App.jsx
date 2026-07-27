@@ -6,7 +6,7 @@ import ParticleSphereBg from './components/ParticleSphereBg';
 import TerminalHeader from './components/TerminalHeader';
 import HeroSection from './components/HeroSection';
 import AboutSection from './components/AboutSection';
-import CyberpunkRadio from './components/CyberpunkRadio';
+import RadioPlayer from './components/RadioPlayer';
 import ProjectsSection from './components/ProjectsSection';
 import GithubStatsCard from './components/GithubStatsCard';
 import InteractiveCli from './components/InteractiveCli';
@@ -94,8 +94,8 @@ export default function App() {
       {/* Interactive 3D Connected Particle Sphere Background */}
       <ParticleSphereBg isZenMode={isZenMode} />
 
-      {/* Draggable Corner Cyberpunk Radio Player (Global Mute Sync) */}
-      {!isLoading && <CyberpunkRadio globalMute={isMuted} />}
+      {/* Draggable Corner Radio Player (Global Mute Sync) */}
+      {!isLoading && <RadioPlayer globalMute={isMuted} />}
 
       {/* Floating Zen Controls Bar (When text is hidden) */}
       {!isLoading && isZenMode && (
