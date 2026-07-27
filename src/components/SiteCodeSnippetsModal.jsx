@@ -212,6 +212,30 @@ useEffect(() => {
   }, 140);
   return () => clearInterval(botInterval);
 }, [isOpen, isPlaying, isAutopilot]);`
+  },
+  {
+    id: 'yt-radio',
+    title: '9. Cyberpunk Radio Player (YouTube IFrame API)',
+    file: 'src/components/CyberpunkRadio.jsx',
+    icon: Music,
+    desc: 'Player de áudio flutuante com inércia física que consome a IFrame Player API nativa do YouTube em background silencioso.',
+    code: `// Inicialização do Player de Rádio YouTube IFrame API
+const initPlayer = (videoId) => {
+  if (playerRef.current) return;
+  playerRef.current = new window.YT.Player('yt-radio-player', {
+    height: '1',
+    width: '1',
+    videoId: videoId,
+    playerVars: { autoplay: 0, controls: 0, modestbranding: 1 },
+    events: {
+      onReady: (event) => event.target.setVolume(effectiveMute ? 0 : volume),
+      onStateChange: (event) => {
+        if (event.data === window.YT.PlayerState.PLAYING) setIsPlaying(true);
+        else if (event.data === window.YT.PlayerState.ENDED) handleNext();
+      }
+    }
+  });
+};`
   }
 ];
 
