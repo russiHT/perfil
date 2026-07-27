@@ -128,12 +128,28 @@ export default function RetroSnakeGameModal({ isOpen, onClose }) {
     playBeep(880, 0.1);
   };
 
+  // Lock background page scroll when Snake game modal is open
+  useEffect(() => {
+    if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isOpen]);
+
   // Keyboard controls
   useEffect(() => {
     if (!isOpen || isAutopilot) return;
 
     const handleKeyDown = (e) => {
       const currentDir = dirRef.current;
+      const gameKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'w', 'W', 's', 'S', 'a', 'A', 'd', 'D'];
+      if (gameKeys.includes(e.key)) {
+        e.preventDefault();
+      }
+
       switch (e.key) {
         case 'ArrowUp':
         case 'w':

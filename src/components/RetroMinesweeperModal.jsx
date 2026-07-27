@@ -38,30 +38,23 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
     } catch (e) { }
   };
 
-  const initializeBoard = () => {
-    let newBoard = Array.from({ length: BOARD_SIZE }, (_, r) =>
-      Array.from({ length: BOARD_SIZE }, (_, c) => ({
-        r,
-        c,
-        isMine: false,
-        isRevealed: false,
-        isFlagged: false,
-        neighborMines: 0
-      }))
-    );
+  const generateMines = (firstR, firstC, boardState) => {
+    let newBoard = boardState.map(row => row.map(cell => ({ ...cell, isMine: false, neighborMines: 0 })));
 
-    // Place mines randomly
+    // Place mines randomly excluding the 3x3 neighborhood around first click
     let placed = 0;
     while (placed < MINES_COUNT) {
       const r = Math.floor(Math.random() * BOARD_SIZE);
       const c = Math.floor(Math.random() * BOARD_SIZE);
-      if (!newBoard[r][c].isMine) {
+      const isSafeZone = Math.abs(r - firstR) <= 1 && Math.abs(c - firstC) <= 1;
+
+      if (!isSafeZone && !newBoard[r][c].isMine) {
         newBoard[r][c].isMine = true;
         placed++;
       }
     }
 
-    // Calculate neighbors
+    // Calculate neighbors for all cells
     for (let r = 0; r < BOARD_SIZE; r++) {
       for (let c = 0; c < BOARD_SIZE; c++) {
         if (!newBoard[r][c].isMine) {
@@ -80,6 +73,21 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
       }
     }
 
+    return newBoard;
+  };
+
+  const initializeBoard = () => {
+    let newBoard = Array.from({ length: BOARD_SIZE }, (_, r) =>
+      Array.from({ length: BOARD_SIZE }, (_, c) => ({
+        r,
+        c,
+        isMine: false,
+        isRevealed: false,
+        isFlagged: false,
+        neighborMines: 0
+      }))
+    );
+
     setBoard(newBoard);
     setIsGameOver(false);
     setIsWon(false);
@@ -92,6 +100,11 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
   useEffect(() => {
     if (isOpen) {
       initializeBoard();
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
     }
   }, [isOpen]);
 
@@ -107,7 +120,14 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
   const revealCell = (r, c, currentBoard = board) => {
     if (isGameOver || isWon || currentBoard[r][c].isRevealed || currentBoard[r][c].isFlagged) return currentBoard;
 
-    let newBoard = currentBoard.map(row => row.map(cell => ({ ...cell })));
+    const hasAnyRevealed = currentBoard.some(row => row.some(cell => cell.isRevealed));
+    let newBoard;
+
+    if (!hasAnyRevealed) {
+      newBoard = generateMines(r, c, currentBoard);
+    } else {
+      newBoard = currentBoard.map(row => row.map(cell => ({ ...cell })));
+    }
 
     if (newBoard[r][c].isMine) {
       // Game Over - reveal all mines

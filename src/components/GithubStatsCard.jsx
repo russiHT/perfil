@@ -1,19 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Github, Star, GitFork, BookOpen, Users, RefreshCw, Radio, Terminal } from 'lucide-react';
-
-// Helper to convert text to Morse Code for the live status tag
-const textToMorse = (text) => {
-  const morseMap = {
-    'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.',
-    'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..',
-    'M': '--', 'N': '-.', 'O': '---', 'P': '.--.', 'Q': '--.-', 'R': '.-.',
-    'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
-    'Y': '-.--', 'Z': '--..', '0': '-----', '1': '.----', '2': '..---',
-    '3': '...--', '4': '....-', '5': '.....', '6': '-....', '7': '--...',
-    '8': '---..', '9': '----.', ' ': '/'
-  };
-  return text.toUpperCase().split('').map(c => morseMap[c] || c).join(' ');
-};
+import { Github, Star, GitFork, BookOpen, Users, RefreshCw } from 'lucide-react';
 
 export default function GithubStatsCard() {
   const [stats, setStats] = useState(null);
@@ -82,8 +68,6 @@ export default function GithubStatsCard() {
     fetchGithubStats();
   }, []);
 
-  const morseStatus = textToMorse('LIVE OK');
-
   return (
     <section style={{ marginBottom: '80px' }}>
       {/* Section Title */}
@@ -102,13 +86,8 @@ export default function GithubStatsCard() {
           <span>## /usr/github_live_stats</span>
         </h2>
 
-        {/* Live Sync Badge & Manual Refresh */}
+        {/* Manual Refresh Button */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ fontSize: '0.72rem', color: 'var(--amber-dim)', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '700' }}>
-            <Radio size={13} className="crt-flicker" />
-            <span>MORSE: <span style={{ color: 'var(--amber-primary)', letterSpacing: '1px' }}>{morseStatus}</span></span>
-          </div>
-
           <button
             onClick={fetchGithubStats}
             disabled={isRefreshing}
@@ -146,9 +125,6 @@ export default function GithubStatsCard() {
               <div>
                 <div style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--amber-bright)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span>russiHT</span>
-                  <span style={{ fontSize: '0.7rem', background: 'var(--amber-primary)', color: '#0d0a00', padding: '2px 6px', borderRadius: '3px', fontWeight: '900' }}>
-                    VERIFIED_DEV
-                  </span>
                 </div>
                 <div style={{ fontSize: '0.85rem', color: 'var(--amber-dim)', marginTop: '2px' }}>
                   {stats.bio} — Última sincronização: <span style={{ color: 'var(--amber-primary)' }}>{stats.lastUpdated}</span>
