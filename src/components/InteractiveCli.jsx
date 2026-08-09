@@ -292,7 +292,8 @@ export default function InteractiveCli({ onOpenDiag }) {
 2. streetwear-shop — Streetwear Shop Experience (JS)   · github.com/russiHT/streetwear-shop
 3. radar-animal    — Radar Animal (JavaScript)         · github.com/russiHT/radar-animal
 4. insinori        — Projeto Java                     · github.com/russiHT/insinori
-5. relatorio-pdf   — Gerador de Relatório PDF (Python) · github.com/russiHT/Gerador-relatorio-pdf`
+5. relatorio-pdf   — Gerador de Relatório PDF (Python) · github.com/russiHT/Gerador-relatorio-pdf
+6. carro           — Simulador & Telemetria ECU (C/Python) · github.com/russiHT/carro`
         });
         break;
 

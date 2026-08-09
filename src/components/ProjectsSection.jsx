@@ -193,6 +193,50 @@ def gerar_pdf(caminho_csv, arquivo_saida):
     ]))
     elementos.append(tabela)
     doc.build(elementos)`
+    },
+    {
+      id: 'carro',
+      tag: 'PROJ_06',
+      title: 'carro — Simulador & Telemetria ECU',
+      desc: 'Simulador de ECU de injeção eletrônica desenvolvido em C acoplado a um painel de telemetria em tempo real (Python/Tkinter) via Sockets TCP local.',
+      techStack: 'C (Sockets POSIX/Winsock), Python 3 (Tkinter, Sockets TCP)',
+      architecturePattern: 'Client-Server / Real-Time TCP Telemetry Data Pipeline',
+      githubUrl: 'https://github.com/russiHT/carro',
+      snippetFile: 'simulator.c',
+      highlights: [
+        'Comunicação bidirecional em tempo real via Sockets TCP (127.0.0.1:5555) transmitindo JSON a ~50 Hz.',
+        'Simulador de física de motor em C (curva de torque, arrasto, corte de giro 3-step e serrilha no limitador).',
+        'Painel GUI responsivo em Python/Tkinter com reconexão automática e gravações de datalog.'
+      ],
+      codeSnippet: `/* simulator.c — Modelo de motor e transmissão de telemetria TCP em C */
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+#define IDLE_RPM   900.0
+#define LIMIT_RPM  7800.0
+#define LAUNCH_RPM 4200.0
+
+/* Estado do motor e telemetria */
+typedef struct {
+  double rpm;
+  double speed_kmh;
+  double tps;
+  double clt;
+  double map_kpa;
+  double afr;
+  int gear;
+  int cut_state;
+} Engine;
+
+// Transmissão de telemetria serializada em JSON por TCP (~50 Hz)
+int enviar_frame_telemetria(sock_t client_fd, const Engine *e) {
+  char payload[512];
+  snprintf(payload, sizeof(payload),
+    "{\\"rpm\\":%.1f,\\"tps\\":%.1f,\\"map\\":%.1f,\\"afr\\":%.2f,\\"gear\\":%d}\\n",
+    e->rpm, e->tps, e->map_kpa, e->afr, e->gear);
+  return send(client_fd, payload, strlen(payload), SEND_FLAGS);
+}`
     }
   ];
 
