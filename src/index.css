@@ -7,7 +7,7 @@
   --amber-bright: #ffd000;
   --amber-glow: rgba(255, 176, 0, 0.6);
   --amber-soft-glow: rgba(255, 176, 0, 0.2);
-  --amber-dim: #b37b00;
+  --amber-dim: #c98a00;   /* clareado: 5.6:1 -> 7.0:1 sobre o fundo */
   --amber-muted: #664600;
   
   --bg-crt: transparent;
@@ -44,10 +44,11 @@ body {
   text-shadow: none;
 }
 
-/* Input Placeholder */
-input::placeholder {
-  color: #777777;
-  opacity: 0.7;
+/* Input Placeholder — antes #777 com opacity .7 ficava em ~3.2:1 (reprova AA) */
+input::placeholder,
+textarea::placeholder {
+  color: var(--amber-dim);
+  opacity: 1;
 }
 
 /* Custom Scrollbar */
@@ -183,4 +184,126 @@ input::placeholder {
 
 .eq-bar-playing {
   animation: eqBarBounce 0.45s ease-in-out infinite alternate;
+}
+
+
+/* ==========================================================================
+   LAYOUT RESPONSIVO
+   Os estilos do site são majoritariamente inline, o que impede media queries.
+   As classes abaixo existem para os pontos onde a adaptação a telas estreitas
+   é indispensável.
+   ========================================================================== */
+
+.terminal-main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+  position: relative;
+  z-index: 10;
+}
+
+@media (max-width: 640px) {
+  .terminal-main {
+    padding: 20px 14px 60px;
+  }
+
+  .terminal-card {
+    padding: 16px;
+  }
+
+  .terminal-link {
+    padding: 10px 14px;
+  }
+}
+
+/* O osciloscópio tem canvas de largura fixa (240px) e quebra o cabeçalho
+   em telas estreitas — decorativo, some sem prejuízo funcional. */
+@media (max-width: 720px) {
+  .oscilloscope-panel {
+    display: none !important;
+  }
+}
+
+/* Arte ASCII do rodapé: escala com a largura em vez de rolar na horizontal. */
+.ascii-banner {
+  font-size: clamp(0.24rem, 0.85vw, 0.42rem);
+  line-height: 1.05;
+}
+
+/* ==========================================================================
+   FOCO VISÍVEL
+   Com `cursor: none` e sem outline, quem navega por teclado ficava sem
+   qualquer pista de onde está.
+   ========================================================================== */
+
+:focus-visible {
+  outline: 2px solid var(--amber-bright);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Link de pular para o conteúdo, visível apenas quando recebe foco. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100000;
+  padding: 12px 20px;
+  background: var(--amber-primary);
+  color: #0a0800;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 0 0 6px 0;
+}
+
+.skip-link:focus {
+  left: 0;
+}
+
+/* ==========================================================================
+   CURSOR CUSTOMIZADO
+   `cursor: none !important` era aplicado globalmente — inclusive em campos de
+   texto, onde sumia o cursor de edição, e em dispositivos de toque, onde o
+   cursor desenhado nunca aparece.
+   ========================================================================== */
+
+@media (pointer: fine) {
+  body.has-custom-cursor,
+  body.has-custom-cursor a,
+  body.has-custom-cursor button,
+  body.has-custom-cursor canvas,
+  body.has-custom-cursor [role='button'] {
+    cursor: none;
+  }
+}
+
+/* ==========================================================================
+   MOVIMENTO REDUZIDO (prefers-reduced-motion)
+   O `crtFlicker` piscava a página inteira a cada 0,15 s indefinidamente —
+   risco real para fotossensibilidade e desconforto vestibular.
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .crt-flicker {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+
+  .crt-overlay-screen {
+    opacity: 0.35;
+  }
+
+  /* O caret continua marcando a posição, apenas sem piscar. */
+  .terminal-caret {
+    animation: none !important;
+  }
 }

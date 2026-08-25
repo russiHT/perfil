@@ -4,20 +4,41 @@ import { Activity, Sliders } from 'lucide-react';
 export default function OscilloscopeHeader() {
   const canvasRef = useRef(null);
   const [waveType, setWaveType] = useState('sine'); // sine, square, sawtooth
-  const [freq, setFreq] = useState(2.5);
+  const freq = 2.5;
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) return undefined;
     const ctx = canvas.getContext('2d');
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Dimensionar o canvas APAGA e reinicia o contexto. Antes isso acontecia
+    // dentro do laço de render, 60 vezes por segundo; agora é feito uma vez.
+    const width = 240;
+    const height = 42;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.floor(width * dpr);
+    canvas.height = Math.floor(height * dpr);
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    // Cor do tema lida uma vez e reavaliada só quando o tema muda, em vez de
+    // um getComputedStyle por frame (que força recálculo de estilo).
+    let themePrimary =
+      getComputedStyle(document.documentElement).getPropertyValue('--amber-primary').trim() || '#ffb000';
+    const handleThemeChange = () => {
+      themePrimary =
+        getComputedStyle(document.documentElement).getPropertyValue('--amber-primary').trim() || '#ffb000';
+    };
+    window.addEventListener('theme-change', handleThemeChange);
 
     let phase = 0;
     let animId;
 
     const render = () => {
-      phase += 0.05;
-      const width = canvas.width = 240;
-      const height = canvas.height = 42;
+      if (!prefersReducedMotion) phase += 0.05;
 
       ctx.clearRect(0, 0, width, height);
 
@@ -28,9 +49,6 @@ export default function OscilloscopeHeader() {
       ctx.moveTo(0, height / 2);
       ctx.lineTo(width, height / 2);
       ctx.stroke();
-
-      // Read active theme color
-      const themePrimary = getComputedStyle(document.documentElement).getPropertyValue('--amber-primary').trim() || '#ffb000';
 
       // Waveform Path
       ctx.strokeStyle = themePrimary;
@@ -58,13 +76,17 @@ export default function OscilloscopeHeader() {
       ctx.stroke();
       ctx.shadowBlur = 0;
 
-      animId = requestAnimationFrame(render);
+      // Com movimento reduzido desenhamos um único quadro estático.
+      if (!prefersReducedMotion) animId = requestAnimationFrame(render);
     };
 
     render();
 
-    return () => cancelAnimationFrame(animId);
-  }, [waveType, freq]);
+    return () => {
+      window.removeEventListener('theme-change', handleThemeChange);
+      cancelAnimationFrame(animId);
+    };
+  }, [waveType]);
 
   const cycleWave = () => {
     if (waveType === 'sine') setWaveType('square');
@@ -73,7 +95,8 @@ export default function OscilloscopeHeader() {
   };
 
   return (
-    <div 
+    <div
+      className="oscilloscope-panel"
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -90,9 +113,11 @@ export default function OscilloscopeHeader() {
       </div>
 
       {/* Waveform Canvas */}
-      <canvas 
-        ref={canvasRef} 
+      <canvas
+        ref={canvasRef}
         onClick={cycleWave}
+        role="img"
+        aria-label={`Osciloscópio decorativo exibindo uma onda ${waveType}`}
         style={{ 
           cursor: 'pointer',
           borderRadius: '3px',
@@ -104,6 +129,7 @@ export default function OscilloscopeHeader() {
 
       <button
         onClick={cycleWave}
+        aria-label="Alternar forma de onda do osciloscópio"
         style={{
           background: 'none',
           border: 'none',

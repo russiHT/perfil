@@ -5,7 +5,30 @@ export default function CustomCursor() {
   const [isHovered, setIsHovered] = useState(false);
   const [isMouseDown, setIsMouseDown] = useState(false);
 
+  // Em telas de toque não existe ponteiro para desenhar, e esconder o cursor
+  // do sistema só atrapalha. `(pointer: fine)` isola mouse/trackpad/caneta.
+  const [hasFinePointer, setHasFinePointer] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(pointer: fine)').matches
+  );
+
   useEffect(() => {
+    const query = window.matchMedia('(pointer: fine)');
+    const onChange = (e) => setHasFinePointer(e.matches);
+    query.addEventListener('change', onChange);
+    return () => query.removeEventListener('change', onChange);
+  }, []);
+
+  // A regra `cursor: none` vive no index.css, dentro de @media (pointer: fine)
+  // e sem atingir inputs/textarea — antes era um <style> global com !important
+  // que apagava também o cursor de edição de texto.
+  useEffect(() => {
+    if (!hasFinePointer) return undefined;
+    document.body.classList.add('has-custom-cursor');
+    return () => document.body.classList.remove('has-custom-cursor');
+  }, [hasFinePointer]);
+
+  useEffect(() => {
+    if (!hasFinePointer) return undefined;
     const handleMouseMove = (e) => {
       setPos({ x: e.clientX, y: e.clientY });
 
@@ -27,19 +50,15 @@ export default function CustomCursor() {
       window.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, []);
+  }, [hasFinePointer]);
+
+  if (!hasFinePointer) return null;
 
   return (
     <>
-      {/* Hide default cursor on desktop */}
-      <style>{`
-        body, button, a, input {
-          cursor: none !important;
-        }
-      `}</style>
-
       {/* Outer Glowing Phosphor Amber Ring */}
-      <div 
+      <div
+        aria-hidden="true" 
         style={{
           position: 'fixed',
           top: pos.y,
@@ -58,7 +77,8 @@ export default function CustomCursor() {
       />
 
       {/* Inner Precision Crosshair Dot */}
-      <div 
+      <div
+        aria-hidden="true" 
         style={{
           position: 'fixed',
           top: pos.y,

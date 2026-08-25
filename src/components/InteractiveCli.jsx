@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Terminal as TermIcon, Send, Maximize2, Minimize2, Gamepad2, Keyboard, ShieldAlert, Key } from 'lucide-react';
+import { Terminal as TermIcon, Send, Maximize2, Minimize2, Gamepad2, Keyboard, ShieldAlert } from 'lucide-react';
+import { playMorse } from '../utils/audio';
 
 const PHILOSOPHY_QUOTES = [
   { text: "A vida não examinada não vale a pena ser vivida.", author: "Sócrates" },
@@ -30,43 +31,6 @@ const encodeToMorse = (str) => {
 
 const decodeFromMorse = (morseStr) => {
   return morseStr.split(' ').map(symbol => REVERSE_MORSE_MAP[symbol] || symbol).join('');
-};
-
-const playMorseBeeps = (morseString) => {
-  try {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    let startTime = audioCtx.currentTime + 0.05;
-    const unit = 0.05; // 50ms unit
-
-    // Play first 60 symbols max
-    const symbols = morseString.slice(0, 60).split('');
-
-    symbols.forEach(char => {
-      if (char === '.' || char === '-') {
-        const duration = char === '.' ? unit : unit * 3;
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(700, startTime);
-
-        gain.gain.setValueAtTime(0.04, startTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
-
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(startTime);
-        osc.stop(startTime + duration);
-
-        startTime += duration + unit;
-      } else if (char === ' ') {
-        startTime += unit * 2;
-      } else if (char === '/') {
-        startTime += unit * 4;
-      }
-    });
-  } catch (e) {
-    // Audio Context fallback
-  }
 };
 
 export default function InteractiveCli({ onOpenDiag }) {
@@ -167,17 +131,25 @@ export default function InteractiveCli({ onOpenDiag }) {
         for (let i = 0; i < len; i++) {
           pass += chars[array[i] % chars.length];
         }
-        try {
-          navigator.clipboard.writeText(pass);
-          newHistory.push({
-            type: 'sys',
-            text: `> [PASSGEN]: Senha gerada (${len} caracteres): ${pass}\n> [CLIPBOARD]: Copiado automaticamente para o clipboard!`
-          });
-        } catch (err) {
-          newHistory.push({
-            type: 'sys',
-            text: `> [PASSGEN]: Senha gerada (${len} caracteres): ${pass}`
-          });
+        // `writeText` devolve uma Promise: um try/catch síncrono nunca pegava
+        // a rejeição, então a mensagem afirmava "copiado" mesmo quando o
+        // navegador negava (contexto não-seguro, permissão recusada).
+        newHistory.push({
+          type: 'sys',
+          text: `> [PASSGEN]: Senha gerada (${len} caracteres): ${pass}`
+        });
+
+        if (navigator.clipboard?.writeText) {
+          navigator.clipboard.writeText(pass).then(
+            () => setHistory((prev) => [
+              ...prev,
+              { type: 'sys', text: '> [CLIPBOARD]: Copiado para a área de transferência.' }
+            ]),
+            () => setHistory((prev) => [
+              ...prev,
+              { type: 'sys', text: '> [CLIPBOARD]: Cópia automática bloqueada pelo navegador — copie manualmente acima.' }
+            ])
+          );
         }
         break;
       }
@@ -207,7 +179,7 @@ export default function InteractiveCli({ onOpenDiag }) {
           newHistory.push({ type: 'sys', text: '> Uso: morse <texto_para_codificar> (ex: morse SOS)' });
         } else {
           const morseResult = encodeToMorse(args);
-          playMorseBeeps(morseResult);
+          playMorse(morseResult);
           newHistory.push({
             type: 'sys',
             text: `> [MORSE ENCODER]: "${args}" -> ${morseResult}\n> [AUDIO]: Transmitindo frequências de bip CRT (700Hz)...`
@@ -279,7 +251,7 @@ export default function InteractiveCli({ onOpenDiag }) {
           text: `[HABILIDADES & TECNOLOGIAS]:
 • Frontend   : React.js, JavaScript (ES6+), HTML5, CSS3
 • Backend    : Java (Spring), Python
-• Animações  : Anime.js v4, WebGL Canvas 3D, CSS Animations
+• Animações  : Anime.js v4, Canvas 2D, CSS Animations
 • Ferramentas: Vite, Git, GitHub, Node.js, Maven`
         });
         break;
@@ -297,13 +269,14 @@ export default function InteractiveCli({ onOpenDiag }) {
         });
         break;
 
-      case 'quote':
+      case 'quote': {
         const randomQuote = PHILOSOPHY_QUOTES[Math.floor(Math.random() * PHILOSOPHY_QUOTES.length)];
         newHistory.push({
           type: 'sys',
           text: `> "${randomQuote.text}" — ${randomQuote.author}.`
         });
         break;
+      }
 
       case 'uptime':
         newHistory.push({
@@ -327,7 +300,7 @@ drwx------ 2 russi russi 4096 /vault/emotion_engine.dat
         });
         break;
 
-      case 'theme':
+      case 'theme': {
         const root = document.documentElement;
         const currentAmber = getComputedStyle(root).getPropertyValue('--amber-primary').trim();
 
@@ -356,7 +329,12 @@ drwx------ 2 russi russi 4096 /vault/emotion_engine.dat
           root.style.setProperty('--border-amber', 'rgba(0, 240, 255, 0.4)');
           newHistory.push({ type: 'sys', text: '> [TEMA COMPLETO]: Sistema alterado para Cyan CRT (#00f0ff).' });
         }
+
+        // Os canvas (esfera e osciloscópio) mantêm a cor do tema em cache
+        // em vez de reler o CSS a cada frame; este evento os avisa da troca.
+        window.dispatchEvent(new CustomEvent('theme-change'));
         break;
+      }
 
       case 'reset':
       case 'sphere':
@@ -421,13 +399,13 @@ drwx------ 2 russi russi 4096 /vault/emotion_engine.dat
         } : {})
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--amber-dim)', fontSize: '0.8rem', fontWeight: '700' }}>
           <TermIcon size={16} color="var(--amber-primary)" />
           <span>CLI INTERATIVO // INTERACTIVE COMMAND PROMPT</span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           <button
             onClick={() => window.dispatchEvent(new CustomEvent('open-snake-game'))}
             className="terminal-link"
@@ -502,15 +480,16 @@ drwx------ 2 russi russi 4096 /vault/emotion_engine.dat
         ))}
       </div>
 
-      <form onSubmit={handleCommand} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <span style={{ color: 'var(--amber-bright)', fontWeight: '700' }}>russi@terminal:~$</span>
+      <form onSubmit={handleCommand} style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+        <span style={{ color: 'var(--amber-bright)', fontWeight: '700', whiteSpace: 'nowrap' }}>russi@terminal:~$</span>
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Digite 'help' para ver os comandos disponíveis... "
           style={{
-            flex: 1,
+            flex: '1 1 140px',
+            minWidth: 0,
             background: 'transparent',
             border: 'none',
             borderBottom: '1px solid var(--border-amber)',

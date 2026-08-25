@@ -58,13 +58,13 @@ export default function ContactSection() {
           marginBottom: '16px'
         }}
       >
-        // canal aberto
+        {'// canal aberto'}
       </div>
 
       <h2
         className="amber-glow-text"
         style={{
-          fontFamily: 'var(--font-heading)',
+          fontFamily: 'var(--font-display)',
           fontSize: '2.2rem',
           fontWeight: '700',
           marginBottom: '12px'
@@ -81,7 +81,6 @@ export default function ContactSection() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
         {links.map((lnk) => {
           const IconComponent = lnk.icon;
-          const isEmail = lnk.label === 'email';
           return (
             <a
               key={lnk.label}

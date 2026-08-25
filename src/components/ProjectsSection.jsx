@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Terminal, Code, Cpu, Eye, ExternalLink, Code2 } from 'lucide-react';
+import { Terminal, ExternalLink, Code2 } from 'lucide-react';
 import ProjectCodeInspectorModal from './ProjectCodeInspectorModal';
 
 export default function ProjectsSection() {
@@ -10,14 +10,14 @@ export default function ProjectsSection() {
       id: 'perfil',
       tag: 'PROJ_01',
       title: 'perfil — CRT Terminal Portfolio',
-      desc: 'Portfólio interativo com estética retrô CRT, sintetizador de áudio WebGL/Canvas 3D, CLI interativo e integração com a API do GitHub.',
-      techStack: 'React.js, Vite, Three.js, Web Audio API',
+      desc: 'Portfólio interativo com estética retrô CRT: sintetizador de áudio via Web Audio API, esfera de partículas em Canvas 2D, CLI interativo e integração com a API do GitHub.',
+      techStack: 'React.js, Vite, Canvas 2D, Web Audio API, Anime.js',
       architecturePattern: 'SPA / Event Driven Audio & WebGL Engine',
       githubUrl: 'https://github.com/russiHT/perfil',
       snippetFile: 'src/components/InteractiveCli.jsx',
       highlights: [
         'Motor de síntese de áudio retrô feito do zero usando a Web Audio API (frequências 700Hz para Código Morse).',
-        'Fundo 3D em WebGL com malha de partículas conectadas e renderização em 60 FPS.',
+        'Esfera de partículas com projeção 3D própria em Canvas 2D e ligações de vizinhança aceleradas por grade espacial.',
         'Sincronização em tempo real com a REST API oficial do GitHub.'
       ],
       codeSnippet: `// Sintetizador de áudio CRT para frequências de código morse
@@ -256,7 +256,7 @@ int enviar_frame_telemetria(sock_t client_fd, const Engine *e) {
           marginBottom: '16px'
         }}
       >
-        // registros_de_projetos
+        {'// registros_de_projetos'}
       </div>
 
       <h2 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Cpu, HardDrive, Zap, X, Flame } from 'lucide-react';
+import { useModalA11y } from '../hooks/useModalA11y';
 
 export default function SystemDiagnosticPanel({ isOpen, onClose }) {
   const [cpuUsage, setCpuUsage] = useState(42);
@@ -18,10 +19,13 @@ export default function SystemDiagnosticPanel({ isOpen, onClose }) {
     return () => clearInterval(interval);
   }, [isOpen]);
 
+  const { containerRef, handleBackdropClick } = useModalA11y(isOpen, onClose);
+
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
+      onClick={handleBackdropClick}
       style={{
         position: 'fixed',
         inset: 0,
@@ -35,11 +39,17 @@ export default function SystemDiagnosticPanel({ isOpen, onClose }) {
         transition: 'background 0.2s ease'
       }}
     >
-      <div 
+      <div
+        ref={containerRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Painel de diagnóstico do sistema"
         className="terminal-card"
         style={{
           width: '100%',
           maxWidth: '680px',
+          maxHeight: '90vh',
+          overflowY: 'auto',
           background: 'rgba(18, 13, 2, 0.95)',
           border: '1px solid var(--border-amber)',
           boxShadow: '0 0 50px var(--amber-glow)',
@@ -47,7 +57,7 @@ export default function SystemDiagnosticPanel({ isOpen, onClose }) {
         }}
       >
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', borderBottom: '1px solid var(--border-amber)', pb: '14px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', borderBottom: '1px solid var(--border-amber)', paddingBottom: '14px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--amber-bright)', fontWeight: '800', fontSize: '1rem' }}>
             <Cpu size={18} />
             <span>PAINEL DE DIAGNÓSTICO DO SISTEMA // SYSTEM HARDWARE MONITOR</span>

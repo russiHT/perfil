@@ -81,11 +81,10 @@ export default function TerminalFooter({ onToggleHideText }) {
           [ AGNES_TACHYON ]
         </div>
         <pre
-          className="amber-glow-text"
+          className="amber-glow-text ascii-banner"
+          aria-hidden="true"
           style={{
             fontFamily: 'var(--font-mono)',
-            fontSize: '0.42rem',
-            lineHeight: 1.05,
             letterSpacing: '0px',
             color: 'var(--amber-bright)',
             textAlign: 'center',

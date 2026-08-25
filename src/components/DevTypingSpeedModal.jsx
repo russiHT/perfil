@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Trophy, RotateCcw, X, Play, Keyboard, CheckCircle2 } from 'lucide-react';
+import { Trophy, RotateCcw, X, Keyboard, CheckCircle2 } from 'lucide-react';
+import { useModalA11y } from '../hooks/useModalA11y';
 
 const TYPING_CODE_SNIPPETS = [
   {
@@ -28,17 +29,15 @@ export default function DevTypingSpeedModal({ isOpen, onClose }) {
   const [accuracy, setAccuracy] = useState(100);
   const [isFinished, setIsFinished] = useState(false);
   const [highScoreWpm, setHighScoreWpm] = useState(() => {
-    return parseInt(localStorage.getItem('crt_typing_wpm_highscore') || '0', 10);
+    try {
+      return parseInt(localStorage.getItem('crt_typing_wpm_highscore') || '0', 10) || 0;
+    } catch (err) {
+      return 0;
+    }
   });
 
   const inputRef = useRef(null);
   const targetCode = TYPING_CODE_SNIPPETS[snippetIndex].code;
-
-  useEffect(() => {
-    if (isOpen) {
-      resetTest();
-    }
-  }, [isOpen]);
 
   const resetTest = () => {
     setUserInput('');
@@ -52,6 +51,12 @@ export default function DevTypingSpeedModal({ isOpen, onClose }) {
       if (inputRef.current) inputRef.current.focus();
     }, 100);
   };
+
+  useEffect(() => {
+    if (isOpen) {
+      resetTest();
+    }
+  }, [isOpen]);
 
   const handleInputChange = (e) => {
     if (isFinished) return;
@@ -88,15 +93,22 @@ export default function DevTypingSpeedModal({ isOpen, onClose }) {
 
       if (finalWpm > highScoreWpm) {
         setHighScoreWpm(finalWpm);
-        localStorage.setItem('crt_typing_wpm_highscore', finalWpm.toString());
+        try {
+          localStorage.setItem('crt_typing_wpm_highscore', finalWpm.toString());
+        } catch (err) {
+          /* storage indisponível */
+        }
       }
     }
   };
+
+  const { containerRef, handleBackdropClick } = useModalA11y(isOpen, onClose);
 
   if (!isOpen) return null;
 
   return (
     <div
+      onClick={handleBackdropClick}
       style={{
         position: 'fixed',
         inset: 0,
@@ -110,10 +122,16 @@ export default function DevTypingSpeedModal({ isOpen, onClose }) {
       }}
     >
       <div
+        ref={containerRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Teste de velocidade de digitação"
         className="terminal-card"
         style={{
           width: '100%',
           maxWidth: '640px',
+          maxHeight: '90vh',
+          overflowY: 'auto',
           background: 'rgba(14, 10, 2, 0.98)',
           border: '1px solid var(--border-amber)',
           boxShadow: '0 0 50px var(--amber-glow)',
@@ -121,7 +139,7 @@ export default function DevTypingSpeedModal({ isOpen, onClose }) {
         }}
       >
         {/* Modal Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', borderBottom: '1px solid var(--border-amber)', pb: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', borderBottom: '1px solid var(--border-amber)', paddingBottom: '12px' }}>
           <div style={{ fontSize: '1rem', fontWeight: '800', color: 'var(--amber-bright)', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Keyboard size={18} />
             <span>TESTE DE VELOCIDADE DE DIGITAÇÃO DEV (WPM)</span>

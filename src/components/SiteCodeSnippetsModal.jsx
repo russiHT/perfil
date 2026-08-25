@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Code, CheckCircle2, Copy, Cpu, Music, Shield, Terminal, Globe } from 'lucide-react';
+import { useModalA11y } from '../hooks/useModalA11y';
 
 const SITE_SNIPPETS = [
   {
@@ -243,6 +244,8 @@ export default function SiteCodeSnippetsModal({ isOpen, onClose }) {
   const [activeTab, setActiveTab] = useState(0);
   const [copied, setCopied] = useState(false);
 
+  const { containerRef, handleBackdropClick } = useModalA11y(isOpen, onClose);
+
   if (!isOpen) return null;
 
   const currentSnippet = SITE_SNIPPETS[activeTab];
@@ -255,6 +258,7 @@ export default function SiteCodeSnippetsModal({ isOpen, onClose }) {
 
   return (
     <div
+      onClick={handleBackdropClick}
       style={{
         position: 'fixed',
         inset: 0,
@@ -268,6 +272,10 @@ export default function SiteCodeSnippetsModal({ isOpen, onClose }) {
       }}
     >
       <div
+        ref={containerRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Inspetor de código do site"
         className="terminal-card"
         style={{
           width: '100%',
@@ -281,7 +289,7 @@ export default function SiteCodeSnippetsModal({ isOpen, onClose }) {
         }}
       >
         {/* Modal Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', borderBottom: '1px solid var(--border-amber)', pb: '14px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', borderBottom: '1px solid var(--border-amber)', paddingBottom: '14px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Code size={20} color="var(--amber-bright)" />
             <div>

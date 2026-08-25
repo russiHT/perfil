@@ -17,6 +17,8 @@ import RetroSnakeGameModal from './components/RetroSnakeGameModal';
 import DevTypingSpeedModal from './components/DevTypingSpeedModal';
 import RetroMinesweeperModal from './components/RetroMinesweeperModal';
 import { RotateCcw, Eye } from 'lucide-react';
+import { playClick } from './utils/audio';
+import { useLatest } from './hooks/useLatest';
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -27,30 +29,18 @@ export default function App() {
   const [isTypingOpen, setIsTypingOpen] = useState(false);
   const [isMinesOpen, setIsMinesOpen] = useState(false);
 
-  const playClickSound = () => {
-    if (isMuted) return;
-    try {
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-      gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.05);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.05);
-    } catch (e) {
-      // AudioContext fallback
-    }
-  };
+  // `isMuted` fica num ref para que o listener global seja registrado uma
+  // única vez, em vez de ser removido e recriado a cada toggle de áudio.
+  const isMutedRef = useLatest(isMuted);
 
   useEffect(() => {
-    const handleClick = () => playClickSound();
+    const handleClick = () => {
+      if (isMutedRef.current) return;
+      playClick();
+    };
     window.addEventListener('click', handleClick);
     return () => window.removeEventListener('click', handleClick);
-  }, [isMuted]);
+  }, [isMutedRef]);
 
   useEffect(() => {
     const handleOpenGame = () => setIsGameOpen(true);
@@ -74,6 +64,8 @@ export default function App() {
 
   return (
     <div className="crt-flicker" style={{ minHeight: '100vh', position: 'relative', background: '#0a0800' }}>
+      <a href="#conteudo" className="skip-link">Pular para o conteúdo</a>
+
       {/* 5-second Profile Boot Loader Screen */}
       {isLoading && (
         <LoadingScreen onComplete={() => setIsLoading(false)} />
@@ -146,7 +138,7 @@ export default function App() {
 
       {/* Main Terminal Content Layer */}
       {!isLoading && !isZenMode && (
-        <main style={{ maxWidth: '960px', margin: '0 auto', padding: '32px 24px 80px 24px', position: 'relative', zIndex: 10 }}>
+        <main id="conteudo" className="terminal-main">
           {/* Boot Logs & Header with Diag Trigger */}
           <TerminalHeader isMuted={isMuted} setIsMuted={setIsMuted} onOpenDiag={() => setIsDiagOpen(true)} />
 

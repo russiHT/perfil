@@ -1,10 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { Github, Star, GitFork, BookOpen, Users, RefreshCw } from 'lucide-react';
 
+const CACHE_KEY = 'russi_github_stats_v1';
+
+/** Lê o último resultado bem-sucedido gravado no navegador. */
+function readCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (err) {
+    return null;
+  }
+}
+
+function writeCache(payload) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ savedAt: Date.now(), payload }));
+  } catch (err) {
+    /* storage cheio ou bloqueado — seguimos sem cache */
+  }
+}
+
 export default function GithubStatsCard() {
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // Hidrata na hora com o último dado real conhecido: o card já nasce
+  // preenchido em vez de piscar "CONECTANDO...".
+  const [stats, setStats] = useState(() => readCache()?.payload ?? null);
+  const [loading, setLoading] = useState(() => readCache() === null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isStale, setIsStale] = useState(false);
+  const [hasError, setHasError] = useState(false);
 
   const fetchGithubStats = async () => {
     setIsRefreshing(true);
@@ -36,7 +60,7 @@ export default function GithubStatsCard() {
         .slice(0, 4)
         .map(([lang]) => lang);
 
-      setStats({
+      const fresh = {
         publicRepos: userData.public_repos || reposData.length,
         followers: userData.followers || 0,
         totalStars,
@@ -45,19 +69,28 @@ export default function GithubStatsCard() {
         avatarUrl: userData.avatar_url || 'https://github.com/russiHT.png',
         bio: userData.bio || 'Desenvolvedor // russiHT',
         lastUpdated: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-      });
+      };
+
+      setStats(fresh);
+      setIsStale(false);
+      setHasError(false);
+      writeCache(fresh);
     } catch (err) {
-      console.warn('Usando dados em cache para estatísticas do GitHub:', err);
-      setStats({
-        publicRepos: 12,
-        followers: 8,
-        totalStars: 18,
-        totalForks: 6,
-        topLangs: ['JavaScript', 'Java', 'Python', 'HTML'],
-        avatarUrl: 'https://github.com/russiHT.png',
-        bio: 'Desenvolvedor // russiHT',
-        lastUpdated: 'CACHE_OFFLINE'
-      });
+      // A API pública do GitHub permite 60 requisições por hora por IP.
+      // Ao estourar esse limite mostramos o ÚLTIMO DADO REAL guardado, marcado
+      // como desatualizado — antes eram exibidos números fixos e inventados
+      // (12 repos, 18 stars) como se fossem estatísticas verdadeiras.
+      console.warn('Falha ao consultar a API do GitHub:', err);
+      const cached = readCache();
+
+      if (cached?.payload) {
+        setStats(cached.payload);
+        setIsStale(true);
+        setHasError(false);
+      } else {
+        setStats(null);
+        setHasError(true);
+      }
     } finally {
       setLoading(false);
       setIsRefreshing(false);
@@ -107,8 +140,37 @@ export default function GithubStatsCard() {
           <div style={{ padding: '30px', textAlign: 'center', color: 'var(--amber-dim)', fontSize: '0.9rem' }}>
             &gt; CONECTANDO À REST API DO GITHUB (api.github.com/users/russiHT)...
           </div>
+        ) : hasError || !stats ? (
+          <div style={{ padding: '30px', textAlign: 'center', color: 'var(--amber-dim)', fontSize: '0.9rem', lineHeight: 1.7 }}>
+            <div>&gt; ESTATÍSTICAS INDISPONÍVEIS NO MOMENTO.</div>
+            <div>&gt; A API pública do GitHub limita 60 consultas por hora. Tente novamente mais tarde.</div>
+            <a
+              href="https://github.com/russiHT"
+              target="_blank"
+              rel="noreferrer"
+              style={{ color: 'var(--amber-primary)', textDecoration: 'underline' }}
+            >
+              Ver o perfil direto no GitHub
+            </a>
+          </div>
         ) : (
           <div>
+            {isStale && (
+              <div
+                role="status"
+                style={{
+                  border: '1px solid var(--border-amber)',
+                  borderRadius: '6px',
+                  padding: '8px 12px',
+                  marginBottom: '16px',
+                  fontSize: '0.78rem',
+                  color: 'var(--amber-dim)'
+                }}
+              >
+                &gt; Limite da API atingido — exibindo a última leitura real armazenada neste navegador.
+              </div>
+            )}
+
             {/* User Profile Header Line */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px', flexWrap: 'wrap' }}>
               <img

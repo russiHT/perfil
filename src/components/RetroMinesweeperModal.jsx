@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, RotateCcw, X, Play, Flag, ShieldAlert, CheckCircle2, Bot } from 'lucide-react';
+import { RotateCcw, X, Flag, ShieldAlert, CheckCircle2, Bot } from 'lucide-react';
+import { useModalA11y } from '../hooks/useModalA11y';
+import { playTone } from '../utils/audio';
 
 const BOARD_SIZE = 9;
 const MINES_COUNT = 10;
@@ -19,24 +21,15 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isAutopilot, setIsAutopilot] = useState(false);
   const [bestTime, setBestTime] = useState(() => {
-    return parseInt(localStorage.getItem('crt_mines_best_time') || '0', 10);
+    try {
+      return parseInt(localStorage.getItem('crt_mines_best_time') || '0', 10) || 0;
+    } catch (err) {
+      return 0;
+    }
   });
 
-  const playSound = (freq = 500, type = 'square', duration = 0.08) => {
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq, ctx.currentTime);
-      gain.gain.setValueAtTime(0.04, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + duration);
-    } catch (e) { }
-  };
+  const playSound = (freq = 500, type = 'square', duration = 0.08) =>
+    playTone({ freq, type, duration, volume: 0.04 });
 
   const generateMines = (firstR, firstC, boardState) => {
     let newBoard = boardState.map(row => row.map(cell => ({ ...cell, isMine: false, neighborMines: 0 })));
@@ -97,25 +90,21 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
     playSound(750, 'sine', 0.1);
   };
 
+  // O bloqueio de scroll do body agora é responsabilidade do useModalA11y.
   useEffect(() => {
-    if (isOpen) {
-      initializeBoard();
-      const originalOverflow = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = originalOverflow;
-      };
-    }
+    if (isOpen) initializeBoard();
   }, [isOpen]);
 
-  // Timer loop
+  // Timer loop — só corre depois que houver alguma célula revelada, para que
+  // o tempo de "pensar antes do primeiro clique" não conte para o recorde.
   useEffect(() => {
-    if (!isOpen || !isPlaying || isGameOver || isWon) return;
+    const hasStarted = board.some((row) => row.some((cell) => cell.isRevealed));
+    if (!isOpen || !isPlaying || isGameOver || isWon || !hasStarted) return;
     const interval = setInterval(() => {
       setTimer(t => t + 1);
     }, 1000);
     return () => clearInterval(interval);
-  }, [isOpen, isPlaying, isGameOver, isWon]);
+  }, [isOpen, isPlaying, isGameOver, isWon, board]);
 
   const revealCell = (r, c, currentBoard = board) => {
     if (isGameOver || isWon || currentBoard[r][c].isRevealed || currentBoard[r][c].isFlagged) return currentBoard;
@@ -178,7 +167,11 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
       playSound(950, 'sine', 0.2);
       if (bestTime === 0 || timer < bestTime) {
         setBestTime(timer);
-        localStorage.setItem('crt_mines_best_time', timer.toString());
+        try {
+          localStorage.setItem('crt_mines_best_time', timer.toString());
+        } catch (err) {
+          /* storage indisponível */
+        }
       }
     }
 
@@ -309,10 +302,13 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
     return () => clearInterval(botInterval);
   }, [isOpen, isPlaying, isGameOver, isWon, isAutopilot]);
 
+  const { containerRef, handleBackdropClick } = useModalA11y(isOpen, onClose);
+
   if (!isOpen) return null;
 
   return (
     <div
+      onClick={handleBackdropClick}
       style={{
         position: 'fixed',
         inset: 0,
@@ -326,10 +322,16 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
       }}
     >
       <div
+        ref={containerRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Mini-game Campo Minado"
         className="terminal-card"
         style={{
           width: '100%',
           maxWidth: '480px',
+          maxHeight: '90vh',
+          overflowY: 'auto',
           background: 'rgba(14, 10, 2, 0.98)',
           border: '1px solid var(--border-amber)',
           boxShadow: '0 0 50px var(--amber-glow)',
@@ -337,7 +339,7 @@ export default function RetroMinesweeperModal({ isOpen, onClose }) {
         }}
       >
         {/* Modal Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', borderBottom: '1px solid var(--border-amber)', pb: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', borderBottom: '1px solid var(--border-amber)', paddingBottom: '12px' }}>
           <div style={{ fontSize: '1rem', fontWeight: '800', color: 'var(--amber-bright)', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <ShieldAlert size={18} />
             <span>[GAME] CAMPO MINADO CRT v2.1</span>

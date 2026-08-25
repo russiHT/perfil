@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { X, Code2, Cpu, CheckCircle2, Copy, ExternalLink } from 'lucide-react';
+import { useModalA11y } from '../hooks/useModalA11y';
 
 export default function ProjectCodeInspectorModal({ project, isOpen, onClose }) {
   const [copied, setCopied] = useState(false);
+
+  const { containerRef, handleBackdropClick } = useModalA11y(isOpen, onClose);
 
   if (!isOpen || !project) return null;
 
@@ -15,6 +18,7 @@ export default function ProjectCodeInspectorModal({ project, isOpen, onClose }) 
 
   return (
     <div
+      onClick={handleBackdropClick}
       style={{
         position: 'fixed',
         inset: 0,
@@ -28,6 +32,10 @@ export default function ProjectCodeInspectorModal({ project, isOpen, onClose }) 
       }}
     >
       <div
+        ref={containerRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={project ? `Inspetor de código — ${project.title}` : "Inspetor de código"}
         className="terminal-card"
         style={{
           width: '100%',
@@ -41,7 +49,7 @@ export default function ProjectCodeInspectorModal({ project, isOpen, onClose }) 
         }}
       >
         {/* Modal Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', borderBottom: '1px solid var(--border-amber)', pb: '14px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', borderBottom: '1px solid var(--border-amber)', paddingBottom: '14px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Code2 size={20} color="var(--amber-bright)" />
             <div>

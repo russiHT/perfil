@@ -31,7 +31,7 @@ export default function HeroSection() {
           marginBottom: '40px'
         }}
       >
-        <span>// continue scrolling to decode the transmission</span>
+        <span>{'// continue scrolling to decode the transmission'}</span>
         <ChevronDown size={16} className="crt-flicker" />
       </div>
 
@@ -47,7 +47,7 @@ export default function HeroSection() {
           letterSpacing: '1px'
         }}
       >
-        // about
+        {'// about'}
       </div>
     </section>
   );

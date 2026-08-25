@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Radio as RadioIcon, Minimize2, Maximize2, Move, Youtube } from 'lucide-react';
+import { Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Minimize2, Maximize2, Move, Youtube } from 'lucide-react';
+import { useLatest } from '../hooks/useLatest';
 
 const TRACKS = [
   {
@@ -28,34 +29,32 @@ export default function RadioPlayer({ globalMute = false }) {
 
   const effectiveMute = globalMute || localMute;
 
+  // Dimensões do card, usadas para manter o player dentro da tela.
+  const radioWidth = isMinimized ? 210 : 290;
+  const radioHeight = isMinimized ? 50 : 120;
+
   // Draggable State with Inertial Momentum Physics
-  const [pos, setPos] = useState({ x: window.innerWidth - 320, y: window.innerHeight - 200 });
+  // Em telas estreitas `innerWidth - 320` daria um valor negativo e o player
+  // nasceria fora da viewport — por isso o clamp já na posição inicial.
+  const [pos, setPos] = useState(() => ({
+    x: Math.max(10, window.innerWidth - 320),
+    y: Math.max(10, window.innerHeight - 200)
+  }));
   const [isDragging, setIsDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
 
   const velRef = useRef({ x: 0, y: 0 });
   const prevMousePos = useRef({ x: 0, y: 0 });
-  const posRef = useRef(pos);
-  posRef.current = pos;
+  const posRef = useLatest(pos);
 
   const playerRef = useRef(null);
 
-  useEffect(() => {
-    if (!window.YT) {
-      const tag = document.createElement('script');
-      tag.src = "https://www.youtube.com/iframe_api";
-      const firstScriptTag = document.getElementsByTagName('script')[0];
-      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-    }
+  // O callback `onStateChange` do YouTube é registrado UMA vez e congela o
+  // escopo daquele render. Sem estes refs, `handleNext` enxergaria para sempre
+  // currentTrackIndex === 0 e o avanço automático nunca passaria da faixa 2.
+  const currentTrackIndexRef = useLatest(currentTrackIndex);
+  const handleNextRef = useRef(null);
 
-    window.onYouTubeIframeAPIReady = () => {
-      initPlayer(TRACKS[0].youtubeId);
-    };
-
-    if (window.YT && window.YT.Player) {
-      initPlayer(TRACKS[currentTrackIndex].youtubeId);
-    }
-  }, []);
 
   const initPlayer = (videoId) => {
     if (playerRef.current) return;
@@ -79,7 +78,7 @@ export default function RadioPlayer({ globalMute = false }) {
             } else if (event.data === window.YT.PlayerState.PAUSED || event.data === window.YT.PlayerState.ENDED) {
               setIsPlaying(false);
               if (event.data === window.YT.PlayerState.ENDED) {
-                handleNext();
+                handleNextRef.current?.();
               }
             }
           }
@@ -89,6 +88,36 @@ export default function RadioPlayer({ globalMute = false }) {
       // YT API fallback
     }
   };
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const setup = () => {
+      if (!cancelled) initPlayer(TRACKS[currentTrackIndexRef.current].youtubeId);
+    };
+
+    if (window.YT && window.YT.Player) {
+      setup();
+      return () => { cancelled = true; };
+    }
+
+    // Encadeia o callback global em vez de sobrescrevê-lo: outro script na
+    // página (ou um segundo mount em StrictMode) não é mais atropelado.
+    const previousCallback = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => {
+      if (typeof previousCallback === 'function') previousCallback();
+      setup();
+    };
+
+    if (!document.getElementById('yt-iframe-api')) {
+      const tag = document.createElement('script');
+      tag.id = 'yt-iframe-api';
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+    }
+
+    return () => { cancelled = true; };
+  }, [currentTrackIndexRef]);
 
   useEffect(() => {
     if (playerRef.current && playerRef.current.setVolume) {
@@ -113,9 +142,9 @@ export default function RadioPlayer({ globalMute = false }) {
           velRef.current.y *= 0.965;
 
           const minX = 10;
-          const maxX = window.innerWidth - (isMinimized ? 220 : 300);
+          const maxX = Math.max(minX, window.innerWidth - radioWidth - 10);
           const minY = 10;
-          const maxY = window.innerHeight - 100;
+          const maxY = Math.max(minY, window.innerHeight - radioHeight - 10);
 
           if (x < minX || x > maxX) {
             velRef.current.x *= -0.75;
@@ -130,8 +159,6 @@ export default function RadioPlayer({ globalMute = false }) {
         }
       }
 
-      const radioWidth = isMinimized ? 210 : 290;
-      const radioHeight = isMinimized ? 50 : 120;
       const centerX = posRef.current.x + radioWidth / 2;
       const centerY = posRef.current.y + radioHeight / 2;
 
@@ -149,46 +176,61 @@ export default function RadioPlayer({ globalMute = false }) {
 
     updatePhysics();
     return () => cancelAnimationFrame(animId);
-  }, [isDragging, isMinimized]);
+  }, [isDragging, isMinimized, radioWidth, radioHeight, posRef]);
 
-  const handleMouseDown = (e) => {
+  // Pointer Events cobrem mouse, toque e caneta com um único caminho de
+  // código — antes o arrasto era só de mouse e o player era inarrastável
+  // em celular e tablet.
+  const handlePointerDown = (e) => {
     if (e.target.closest('button, input, iframe, a')) return;
     setIsDragging(true);
     velRef.current = { x: 0, y: 0 };
-    dragStart.current = {
-      x: e.clientX - pos.x,
-      y: e.clientY - pos.y
-    };
+    dragStart.current = { x: e.clientX - pos.x, y: e.clientY - pos.y };
     prevMousePos.current = { x: e.clientX, y: e.clientY };
   };
 
   useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (!isDragging) return;
+    if (!isDragging) return undefined;
 
-      const newVx = (e.clientX - prevMousePos.current.x) * 1.8;
-      const newVy = (e.clientY - prevMousePos.current.y) * 1.8;
-      velRef.current = { x: newVx, y: newVy };
+    const handlePointerMove = (e) => {
+      velRef.current = {
+        x: (e.clientX - prevMousePos.current.x) * 1.8,
+        y: (e.clientY - prevMousePos.current.y) * 1.8
+      };
       prevMousePos.current = { x: e.clientX, y: e.clientY };
 
-      const newX = Math.max(10, Math.min(window.innerWidth - 240, e.clientX - dragStart.current.x));
-      const newY = Math.max(10, Math.min(window.innerHeight - 90, e.clientY - dragStart.current.y));
-      setPos({ x: newX, y: newY });
+      const maxX = Math.max(10, window.innerWidth - radioWidth - 10);
+      const maxY = Math.max(10, window.innerHeight - radioHeight - 10);
+      setPos({
+        x: Math.max(10, Math.min(maxX, e.clientX - dragStart.current.x)),
+        y: Math.max(10, Math.min(maxY, e.clientY - dragStart.current.y))
+      });
     };
 
-    const handleMouseUp = () => {
-      setIsDragging(false);
-    };
+    const stopDragging = () => setIsDragging(false);
 
-    if (isDragging) {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
-    }
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', stopDragging);
+    window.addEventListener('pointercancel', stopDragging);
+
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', stopDragging);
+      window.removeEventListener('pointercancel', stopDragging);
     };
-  }, [isDragging]);
+  }, [isDragging, radioWidth, radioHeight]);
+
+  // Ao redimensionar a janela o player podia ficar preso fora da viewport.
+  useEffect(() => {
+    const handleResize = () => {
+      setPos((prev) => ({
+        x: Math.max(10, Math.min(prev.x, window.innerWidth - radioWidth - 10)),
+        y: Math.max(10, Math.min(prev.y, window.innerHeight - radioHeight - 10))
+      }));
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [radioWidth, radioHeight]);
 
   const togglePlay = () => {
     if (!playerRef.current || !playerRef.current.playVideo) return;
@@ -221,17 +263,25 @@ export default function RadioPlayer({ globalMute = false }) {
     changeTrack(prevIdx);
   };
 
+  // Mantém o ref apontando para a versão atual, lida pelo callback do YouTube.
+  // A escrita fica num efeito: mexer em refs durante o render não é seguro.
+  useEffect(() => {
+    handleNextRef.current = handleNext;
+  });
+
   const currentTrack = TRACKS[currentTrackIndex];
 
   return (
     <div
-      onMouseDown={handleMouseDown}
+      onPointerDown={handlePointerDown}
       style={{
         position: 'fixed',
         left: `${pos.x}px`,
         top: `${pos.y}px`,
         zIndex: 120,
-        width: isMinimized ? '210px' : '290px',
+        width: `${radioWidth}px`,
+        maxWidth: 'calc(100vw - 20px)',
+        touchAction: 'none',
         background: 'rgba(18, 13, 2, 0.92)',
         backdropFilter: 'blur(16px)',
         WebkitBackdropFilter: 'blur(16px)',
@@ -286,6 +336,7 @@ export default function RadioPlayer({ globalMute = false }) {
 
           <button
             onClick={() => setIsMinimized(!isMinimized)}
+            aria-label={isMinimized ? 'Expandir rádio' : 'Minimizar rádio'}
             style={{
               background: 'none',
               border: 'none',
@@ -328,6 +379,7 @@ export default function RadioPlayer({ globalMute = false }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <button
                 onClick={handlePrev}
+                aria-label="Faixa anterior"
                 className="terminal-link"
                 style={{ padding: '5px 8px' }}
                 title="Anterior"
@@ -337,6 +389,7 @@ export default function RadioPlayer({ globalMute = false }) {
 
               <button
                 onClick={togglePlay}
+                aria-label={isPlaying ? 'Pausar' : 'Tocar'}
                 className="terminal-link"
                 style={{ padding: '6px 12px', background: 'var(--amber-primary)', color: '#0d0a00' }}
                 title={isPlaying ? "Pausar" : "Tocar"}
@@ -346,6 +399,7 @@ export default function RadioPlayer({ globalMute = false }) {
 
               <button
                 onClick={handleNext}
+                aria-label="Próxima faixa"
                 className="terminal-link"
                 style={{ padding: '5px 8px' }}
                 title="Próxima"
@@ -357,6 +411,7 @@ export default function RadioPlayer({ globalMute = false }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <button
                 onClick={() => setLocalMute(!localMute)}
+                aria-label={effectiveMute ? 'Ativar som do rádio' : 'Silenciar rádio'}
                 style={{ background: 'none', border: 'none', color: 'var(--amber-primary)', cursor: 'pointer', padding: '2px' }}
               >
                 {effectiveMute || volume === 0 ? <VolumeX size={14} /> : <Volume2 size={14} />}
@@ -366,6 +421,7 @@ export default function RadioPlayer({ globalMute = false }) {
                 type="range"
                 min="0"
                 max="100"
+                aria-label="Volume do rádio"
                 step="5"
                 value={effectiveMute ? 0 : volume}
                 onChange={(e) => {

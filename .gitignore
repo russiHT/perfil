@@ -2,3 +2,6 @@ node_modules
 dist
 .DS_Store
 *.local
+
+# Arquivos separados para exclusao manual (assets nao referenciados)
+_to_delete

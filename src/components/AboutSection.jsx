@@ -18,7 +18,7 @@ export default function AboutSection() {
       <h2
         className="amber-glow-text"
         style={{
-          fontFamily: 'var(--font-heading)',
+          fontFamily: 'var(--font-display)',
           fontSize: '2.2rem',
           fontWeight: '700',
           marginBottom: '20px',
@@ -83,7 +83,7 @@ export default function AboutSection() {
       <div className="terminal-card" style={{ padding: '20px', background: 'rgba(18, 13, 2, 0.75)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
           <div style={{ fontSize: '0.8rem', color: 'var(--amber-dim)', fontWeight: '700' }}>
-            // SOBRE A ARQUITETURA DESTE SITE (perfil v2.1)
+            {'// SOBRE A ARQUITETURA DESTE SITE (perfil v2.1)'}
           </div>
 
           <button
@@ -102,12 +102,12 @@ export default function AboutSection() {
             <p style={{ opacity: 0.85, marginTop: '2px' }}>Osciladores em tempo real para bipes de Código Morse e cliques de terminal.</p>
           </div>
           <div>
-            <strong style={{ color: 'var(--amber-bright)' }}>• 3D WebGL Mesh Engine:</strong>
-            <p style={{ opacity: 0.85, marginTop: '2px' }}>Esfera de partículas interativas com renderização fluida em 60 FPS.</p>
+            <strong style={{ color: 'var(--amber-bright)' }}>• Motor de Malha 3D em Canvas:</strong>
+            <p style={{ opacity: 0.85, marginTop: '2px' }}>Esfera de partículas com projeção 3D e busca de vizinhos por grade espacial, escrita à mão sobre Canvas 2D.</p>
           </div>
           <div>
             <strong style={{ color: 'var(--amber-bright)' }}>• Dynamic CRT Design System:</strong>
-            <p style={{ opacity: 0.85, marginTop: '2px' }}>Filtro de scanlines, cursor fosforescente e temas de cor alternáveis em tempo de execução.</p>
+            <p style={{ opacity: 0.85, marginTop: '2px' }}>Filtro de scanlines, cursor fosforescente e temas de cor alternáveis em tempo de execução — com respeito a prefers-reduced-motion.</p>
           </div>
         </div>
       </div>

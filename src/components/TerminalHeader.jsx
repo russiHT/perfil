@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Volume2, VolumeX, ShieldCheck, Radio, Cpu, Activity } from 'lucide-react';
+import { Volume2, VolumeX, ShieldCheck, Radio } from 'lucide-react';
 import OscilloscopeHeader from './OscilloscopeHeader';
 
 export default function TerminalHeader({ isMuted, setIsMuted, onOpenDiag }) {
@@ -59,7 +59,12 @@ export default function TerminalHeader({ isMuted, setIsMuted, onOpenDiag }) {
         <OscilloscopeHeader />
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <span style={{ fontFamily: 'monospace' }}>[{time || '15:33:00'}]</span>
+          <time
+            aria-label={`Hora local: ${time}`}
+            style={{ fontFamily: 'monospace' }}
+          >
+            [{time || '--:--:--'}]
+          </time>
           
           <button 
             onClick={() => setIsMuted(!isMuted)}

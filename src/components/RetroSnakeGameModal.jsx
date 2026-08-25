@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Trophy, RotateCcw, X, Play, Bot } from 'lucide-react';
+import { useModalA11y } from '../hooks/useModalA11y';
+import { playTone } from '../utils/audio';
+import { useLatest } from '../hooks/useLatest';
 
 const GRID_SIZE = 18;
 const INITIAL_SNAKE = [
@@ -79,72 +82,78 @@ export default function RetroSnakeGameModal({ isOpen, onClose }) {
   const [food, setFood] = useState({ x: 14, y: 8 });
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(() => {
-    return parseInt(localStorage.getItem('crt_snake_highscore') || '0', 10);
+    try {
+      return parseInt(localStorage.getItem('crt_snake_highscore') || '0', 10) || 0;
+    } catch (err) {
+      return 0;
+    }
   });
   const [isGameOver, setIsGameOver] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isAutopilot, setIsAutopilot] = useState(false);
 
-  const dirRef = useRef(direction);
-  dirRef.current = direction;
+  // Refs espelhando o estado: o loop do jogo lê daqui em vez de depender
+  // dessas variáveis, para que o setInterval não seja destruído e recriado
+  // a cada maçã comida (o que causava engasgo no movimento).
+  const dirRef = useLatest(direction);
+  const snakeRef = useLatest(snake);
+  const foodRef = useLatest(food);
+  const highScoreRef = useLatest(highScore);
+  const scoreRef = useRef(0);
+  // Direção efetivamente aplicada no último tick. Comparar contra ela (e não
+  // contra a última tecla pressionada) impede a manobra "cima + esquerda no
+  // mesmo tick" que fazia a cobra dar meia-volta e morrer instantaneamente.
+  const appliedDirRef = useRef(INITIAL_DIR);
 
-  const playBeep = (freq = 600, duration = 0.08) => {
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(freq, ctx.currentTime);
-      gain.gain.setValueAtTime(0.03, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + duration);
-    } catch (e) {}
-  };
+  const playBeep = (freq = 600, duration = 0.08) =>
+    playTone({ freq, type: 'square', duration, volume: 0.03 });
 
   const generateFood = (currentSnake) => {
-    let newFood;
-    while (true) {
-      newFood = {
+    // Antes isto era um `while (true)`: se a cobra preenchesse o tabuleiro,
+    // o laço nunca terminava e a aba do navegador congelava. Agora sorteamos
+    // com limite e, se falhar, varremos as células livres de forma exaustiva.
+    const occupied = new Set(currentSnake.map((s) => `${s.x},${s.y}`));
+
+    for (let attempt = 0; attempt < 200; attempt++) {
+      const candidate = {
         x: Math.floor(Math.random() * GRID_SIZE),
         y: Math.floor(Math.random() * GRID_SIZE)
       };
-      if (!currentSnake.some(segment => segment.x === newFood.x && segment.y === newFood.y)) {
-        break;
+      if (!occupied.has(`${candidate.x},${candidate.y}`)) return candidate;
+    }
+
+    const free = [];
+    for (let x = 0; x < GRID_SIZE; x++) {
+      for (let y = 0; y < GRID_SIZE; y++) {
+        if (!occupied.has(`${x},${y}`)) free.push({ x, y });
       }
     }
-    return newFood;
+
+    // Tabuleiro cheio = vitória; devolve a própria cabeça como sentinela.
+    return free.length ? free[Math.floor(Math.random() * free.length)] : { ...currentSnake[0] };
   };
 
   const startGame = () => {
     setSnake(INITIAL_SNAKE);
+    snakeRef.current = INITIAL_SNAKE;
     setDirection({ x: 1, y: 0 });
+    appliedDirRef.current = { x: 1, y: 0 };
     setScore(0);
+    scoreRef.current = 0;
     setIsGameOver(false);
     setIsPlaying(true);
-    setFood(generateFood(INITIAL_SNAKE));
+    const initialFood = generateFood(INITIAL_SNAKE);
+    setFood(initialFood);
+    foodRef.current = initialFood;
     playBeep(880, 0.1);
   };
-
-  // Lock background page scroll when Snake game modal is open
-  useEffect(() => {
-    if (isOpen) {
-      const originalOverflow = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = originalOverflow;
-      };
-    }
-  }, [isOpen]);
 
   // Keyboard controls
   useEffect(() => {
     if (!isOpen || isAutopilot) return;
 
     const handleKeyDown = (e) => {
-      const currentDir = dirRef.current;
+      const currentDir = appliedDirRef.current;
       const gameKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'w', 'W', 's', 'S', 'a', 'A', 'd', 'D'];
       if (gameKeys.includes(e.key)) {
         e.preventDefault();
@@ -186,62 +195,73 @@ export default function RetroSnakeGameModal({ isOpen, onClose }) {
 
     const tickSpeed = isAutopilot ? 65 : 120;
 
+    // O tick lê tudo de refs e chama os setters uma única vez, fora de
+    // qualquer função atualizadora de estado. Isso evita efeitos colaterais
+    // duplicados sob React.StrictMode (que invoca updaters duas vezes em dev).
     const interval = setInterval(() => {
-      setSnake((prevSnake) => {
-        let currentNextDir = dirRef.current;
+      const prevSnake = snakeRef.current;
+      const currentFood = foodRef.current;
 
-        if (isAutopilot) {
-          currentNextDir = getNextAutopilotDirection(prevSnake, food, dirRef.current);
-          setDirection(currentNextDir);
+      let nextDir = dirRef.current;
+      if (isAutopilot) {
+        nextDir = getNextAutopilotDirection(prevSnake, currentFood, appliedDirRef.current);
+        setDirection(nextDir);
+      }
+      appliedDirRef.current = nextDir;
+
+      const head = { x: prevSnake[0].x + nextDir.x, y: prevSnake[0].y + nextDir.y };
+
+      const hitWall =
+        head.x < 0 || head.x >= GRID_SIZE || head.y < 0 || head.y >= GRID_SIZE;
+      const hitSelf = prevSnake.some((seg) => seg.x === head.x && seg.y === head.y);
+
+      if (hitWall || hitSelf) {
+        setIsGameOver(true);
+        setIsPlaying(false);
+        playBeep(220, 0.3);
+        return;
+      }
+
+      const newSnake = [head, ...prevSnake];
+      const ate = head.x === currentFood.x && head.y === currentFood.y;
+
+      if (ate) {
+        playBeep(1200, 0.08);
+        const nextScore = scoreRef.current + 10;
+        setScore(nextScore);
+        scoreRef.current = nextScore;
+
+        if (nextScore > highScoreRef.current) {
+          setHighScore(nextScore);
+          highScoreRef.current = nextScore;
+          try {
+            localStorage.setItem('crt_snake_highscore', nextScore.toString());
+          } catch (err) {
+            /* modo privado / storage bloqueado */
+          }
         }
 
-        const head = { ...prevSnake[0] };
-        head.x += currentNextDir.x;
-        head.y += currentNextDir.y;
+        const nextFood = generateFood(newSnake);
+        setFood(nextFood);
+        foodRef.current = nextFood;
+      } else {
+        newSnake.pop();
+      }
 
-        // Collision check
-        if (head.x < 0 || head.x >= GRID_SIZE || head.y < 0 || head.y >= GRID_SIZE) {
-          setIsGameOver(true);
-          setIsPlaying(false);
-          playBeep(220, 0.3);
-          return prevSnake;
-        }
-
-        if (prevSnake.some(segment => segment.x === head.x && segment.y === head.y)) {
-          setIsGameOver(true);
-          setIsPlaying(false);
-          playBeep(220, 0.3);
-          return prevSnake;
-        }
-
-        const newSnake = [head, ...prevSnake];
-
-        if (head.x === food.x && head.y === food.y) {
-          playBeep(1200, 0.08);
-          setScore(s => {
-            const nextScore = s + 10;
-            if (nextScore > highScore) {
-              setHighScore(nextScore);
-              localStorage.setItem('crt_snake_highscore', nextScore.toString());
-            }
-            return nextScore;
-          });
-          setFood(generateFood(newSnake));
-        } else {
-          newSnake.pop();
-        }
-
-        return newSnake;
-      });
+      setSnake(newSnake);
+      snakeRef.current = newSnake;
     }, tickSpeed);
 
     return () => clearInterval(interval);
-  }, [isOpen, isPlaying, isGameOver, food, highScore, isAutopilot]);
+  }, [isOpen, isPlaying, isGameOver, isAutopilot, dirRef, foodRef, snakeRef, highScoreRef]);
+
+  const { containerRef, handleBackdropClick } = useModalA11y(isOpen, onClose);
 
   if (!isOpen) return null;
 
   return (
     <div
+      onClick={handleBackdropClick}
       style={{
         position: 'fixed',
         inset: 0,
@@ -255,10 +275,16 @@ export default function RetroSnakeGameModal({ isOpen, onClose }) {
       }}
     >
       <div
+        ref={containerRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Mini-game Cyber-Snake"
         className="terminal-card"
         style={{
           width: '100%',
           maxWidth: '520px',
+          maxHeight: '90vh',
+          overflowY: 'auto',
           background: 'rgba(14, 10, 2, 0.98)',
           border: '1px solid var(--border-amber)',
           boxShadow: '0 0 50px var(--amber-glow)',
@@ -266,7 +292,7 @@ export default function RetroSnakeGameModal({ isOpen, onClose }) {
         }}
       >
         {/* Modal Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', borderBottom: '1px solid var(--border-amber)', pb: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', borderBottom: '1px solid var(--border-amber)', paddingBottom: '12px' }}>
           <div style={{ fontSize: '1rem', fontWeight: '800', color: 'var(--amber-bright)', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span>[GAME] CYBER-SNAKE CRT v2.1</span>
           </div>
@@ -410,7 +436,7 @@ export default function RetroSnakeGameModal({ isOpen, onClose }) {
           ) : (
             <>
               <button
-                onClick={() => dirRef.current.y !== 1 && setDirection({ x: 0, y: -1 })}
+                onClick={() => appliedDirRef.current.y !== 1 && setDirection({ x: 0, y: -1 })}
                 className="terminal-link"
                 style={{ padding: '6px 16px', fontSize: '0.8rem' }}
               >
@@ -418,14 +444,14 @@ export default function RetroSnakeGameModal({ isOpen, onClose }) {
               </button>
               <div style={{ display: 'flex', gap: '20px' }}>
                 <button
-                  onClick={() => dirRef.current.x !== 1 && setDirection({ x: -1, y: 0 })}
+                  onClick={() => appliedDirRef.current.x !== 1 && setDirection({ x: -1, y: 0 })}
                   className="terminal-link"
                   style={{ padding: '6px 16px', fontSize: '0.8rem' }}
                 >
                   ◀
                 </button>
                 <button
-                  onClick={() => dirRef.current.x !== -1 && setDirection({ x: 1, y: 0 })}
+                  onClick={() => appliedDirRef.current.x !== -1 && setDirection({ x: 1, y: 0 })}
                   className="terminal-link"
                   style={{ padding: '6px 16px', fontSize: '0.8rem' }}
                 >
@@ -433,7 +459,7 @@ export default function RetroSnakeGameModal({ isOpen, onClose }) {
                 </button>
               </div>
               <button
-                onClick={() => dirRef.current.y !== -1 && setDirection({ x: 0, y: 1 })}
+                onClick={() => appliedDirRef.current.y !== -1 && setDirection({ x: 0, y: 1 })}
                 className="terminal-link"
                 style={{ padding: '6px 16px', fontSize: '0.8rem' }}
               >
